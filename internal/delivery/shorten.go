@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -38,6 +39,9 @@ func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	shortUrl := d.usecase.NewShortUrl(longUrl)
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(shortUrl)))
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(shortUrl))

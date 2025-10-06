@@ -1,6 +1,8 @@
 package repository
 
-import "errors"
+import (
+	"errors"
+)
 
 func (r repository) GetLongUrl(shortUrlID string) (string, error) {
 	shortURLModel, ok := r.storage[shortUrlID]
