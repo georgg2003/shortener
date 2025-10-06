@@ -19,9 +19,8 @@ func randomBase62(n int) string {
 }
 
 func (s useCase) NewShortUrl(url string) string {
-	// TODO write url to db
 	shortUrlID := randomBase62(shortUrlIDLength)
 	s.repository.NewShortUrl(url, shortUrlID)
-	shortUrl := fmt.Sprintf("%v/%v", serviceURL, shortUrlID)
+	shortUrl := fmt.Sprintf("%v/%v/", serviceURL, shortUrlID)
 	return shortUrl
 }

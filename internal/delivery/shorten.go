@@ -6,12 +6,13 @@ import (
 )
 
 func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	defer r.Body.Close()
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil || len(bytes) == 0 {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
