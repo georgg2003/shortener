@@ -38,7 +38,7 @@ func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortURL := d.usecase.NewShortUrl(longURL)
+	shortURL := d.usecase.NewShortURL(longURL)
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(shortURL)))
