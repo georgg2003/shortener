@@ -3,6 +3,7 @@ package delivery
 import (
 	"io"
 	"net/http"
+	"net/url"
 )
 
 func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +20,24 @@ func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortUrl := d.usecase.NewShortUrl(string(bytes))
+	longUrl := string(bytes)
+
+	parsedUrl, parseErr := url.Parse(longUrl)
+
+	if parseErr != nil {
+		http.Error(w, "Invalid url", http.StatusBadRequest)
+		return
+	}
+	if parsedUrl.Scheme == "" {
+		http.Error(w, "Invalid scheme", http.StatusBadRequest)
+		return
+	}
+	if parsedUrl.Hostname() == "" {
+		http.Error(w, "Invalid hostname", http.StatusBadRequest)
+		return
+	}
+
+	shortUrl := d.usecase.NewShortUrl(longUrl)
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(shortUrl))

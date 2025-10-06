@@ -15,7 +15,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", delivery.ShortenURL)
-	mux.HandleFunc("/{id}/", delivery.ProcessShortURL)
+	mux.HandleFunc("/{id}", delivery.ProcessShortURL)
 	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
 		panic(err)
