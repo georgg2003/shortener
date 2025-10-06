@@ -15,5 +15,5 @@ func (d delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Location", longUrl)
-	w.WriteHeader(http.StatusPermanentRedirect)
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
