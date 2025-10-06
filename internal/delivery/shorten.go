@@ -23,17 +23,17 @@ func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	longURL := string(bytes)
 
-	parsedUrl, parseErr := url.Parse(longURL)
+	parsedURL, parseErr := url.Parse(longURL)
 
 	if parseErr != nil {
 		http.Error(w, "Invalid url", http.StatusBadRequest)
 		return
 	}
-	if parsedUrl.Scheme == "" {
+	if parsedURL.Scheme == "" {
 		http.Error(w, "Invalid scheme", http.StatusBadRequest)
 		return
 	}
-	if parsedUrl.Hostname() == "" {
+	if parsedURL.Hostname() == "" {
 		http.Error(w, "Invalid hostname", http.StatusBadRequest)
 		return
 	}

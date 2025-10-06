@@ -4,8 +4,8 @@ import (
 	"errors"
 )
 
-func (r repository) GetLongURL(shortUrlID string) (string, error) {
-	shortURLModel, ok := r.storage[shortUrlID]
+func (r repository) GetLongURL(shortID string) (string, error) {
+	shortURLModel, ok := r.storage[shortID]
 	if !ok {
 		return "", errors.New("value not found")
 	}

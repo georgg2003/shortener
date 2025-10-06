@@ -3,8 +3,8 @@ package repository
 import "github.com/georgg2003/shortener/internal/models"
 
 type Repository interface {
-	NewShortURL(url string, shortUrlID string)
-	GetLongURL(shortUrlID string) (string, error)
+	NewShortURL(url string, shortID string)
+	GetLongURL(shortID string) (string, error)
 }
 
 type repository struct {

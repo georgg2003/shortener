@@ -1,6 +1,6 @@
 package models
 
 type ShortURL struct {
-	ShortUrlID string
-	LongURL    string
+	ShortID string
+	LongURL string
 }

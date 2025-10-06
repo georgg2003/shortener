@@ -19,8 +19,8 @@ func randomBase62(n int) string {
 }
 
 func (s useCase) NewShortURL(url string) string {
-	shortUrlID := randomBase62(shortUrlIDLength)
-	s.repository.NewShortURL(url, shortUrlID)
-	shortUrl := fmt.Sprintf("%v/%v", serviceURL, shortUrlID)
+	shortID := randomBase62(shortUrlIDLength)
+	s.repository.NewShortURL(url, shortID)
+	shortUrl := fmt.Sprintf("%v/%v", serviceURL, shortID)
 	return shortUrl
 }
