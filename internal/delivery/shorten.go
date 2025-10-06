@@ -21,9 +21,9 @@ func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	longUrl := string(bytes)
+	longURL := string(bytes)
 
-	parsedUrl, parseErr := url.Parse(longUrl)
+	parsedUrl, parseErr := url.Parse(longURL)
 
 	if parseErr != nil {
 		http.Error(w, "Invalid url", http.StatusBadRequest)
@@ -38,11 +38,11 @@ func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortUrl := d.usecase.NewShortUrl(longUrl)
+	shortURL := d.usecase.NewShortUrl(longURL)
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(shortUrl)))
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(shortURL)))
 
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(shortUrl))
+	w.Write([]byte(shortURL))
 }

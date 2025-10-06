@@ -13,13 +13,13 @@ func (d delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := r.PathValue("id")
-	longUrl, err := d.usecase.ProcessShortURL(id)
+	longURL, err := d.usecase.ProcessShortURL(id)
 
 	if err != nil {
 		http.Error(w, "Link not found", http.StatusNotFound)
 		return
 	}
 
-	w.Header().Set("Location", longUrl)
+	w.Header().Set("Location", longURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
