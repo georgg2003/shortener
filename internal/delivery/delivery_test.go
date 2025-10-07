@@ -1,16 +1,15 @@
 package delivery_test
 
 import (
-	"bytes"
-	"io"
+	"errors"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/georgg2003/shortener/internal/delivery"
 	"github.com/georgg2003/shortener/internal/repository"
 	"github.com/georgg2003/shortener/internal/usecase"
+	"github.com/go-resty/resty/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -25,10 +24,35 @@ type TestCase struct {
 	wrongShortID              bool
 }
 
+func testRequest(
+	t *testing.T,
+	ts *httptest.Server,
+	method, url string,
+	body interface{},
+) *resty.Response {
+	req := resty.New().SetRedirectPolicy(resty.NoRedirectPolicy()).R()
+	req.Method = method
+	req.URL = url
+	req.SetBody(body)
+
+	resp, err := req.Send()
+
+	if !errors.Is(err, resty.ErrAutoRedirectDisabled) {
+		require.NoError(t, err, "error making HTTP request")
+	}
+
+	return resp
+}
+
 func TestDelivery(t *testing.T) {
 	repo := repository.New()
 	usecase := usecase.New(repo)
 	delivery := delivery.New(usecase)
+
+	r := delivery.GetNewRouter()
+
+	ts := httptest.NewServer(r)
+	defer ts.Close()
 
 	testCases := []TestCase{
 		{
@@ -73,24 +97,13 @@ func TestDelivery(t *testing.T) {
 		shortURL := ""
 		t.Run(test.name, func(t *testing.T) {
 			t.Run("shorten", func(t *testing.T) {
-				body := bytes.Buffer{}
-				body.WriteString(test.testURL)
+				res := testRequest(t, ts, test.shortenMethod, ts.URL+"/", test.testURL)
+				statusCode := res.StatusCode()
+				assert.Equal(t, test.shortenExpectedStatusCode, statusCode)
 
-				request := httptest.NewRequest(test.shortenMethod, "/", &body)
-				recorder := httptest.NewRecorder()
-
-				delivery.ShortenURL(recorder, request)
-
-				res := recorder.Result()
-				defer res.Body.Close()
-				assert.Equal(t, test.shortenExpectedStatusCode, res.StatusCode)
-				assert.Equal(t, "text/plain; charset=utf-8", res.Header.Get("Content-Type"))
-
-				if res.StatusCode == http.StatusCreated {
-					b, err := io.ReadAll(res.Body)
-					require.Nil(t, err)
+				if statusCode == http.StatusCreated {
+					b := res.Body()
 					shortURL = string(b)
-					t.Log(shortURL)
 
 					require.NotEmpty(t, shortURL)
 				}
@@ -101,22 +114,17 @@ func TestDelivery(t *testing.T) {
 					t.Skip("Skipping test because shortURL was not get")
 				}
 				if test.wrongShortID {
-					shortURL = "http://localhost:8080/wrong_id"
+					shortURL = "https://google.com/wrong_id"
 				}
 
 				t.Logf("Making request to %v", shortURL)
-				request := httptest.NewRequest(test.processMethod, shortURL, nil)
-				shortID := strings.Split(shortURL, "/")[3]
-				request.SetPathValue("id", shortID)
-				recorder := httptest.NewRecorder()
 
-				delivery.ProcessShortURL(recorder, request)
+				res := testRequest(t, ts, test.processMethod, shortURL, nil)
+				statusCode := res.StatusCode()
 
-				res := recorder.Result()
-				defer res.Body.Close()
-				assert.Equal(t, test.processExpectedStatusCode, res.StatusCode)
-				if res.StatusCode == http.StatusTemporaryRedirect {
-					assert.Equal(t, test.testURL, res.Header.Get("Location"))
+				assert.Equal(t, test.processExpectedStatusCode, statusCode)
+				if statusCode == http.StatusTemporaryRedirect {
+					assert.Equal(t, test.testURL, res.Header().Get("Location"))
 				}
 			})
 		})

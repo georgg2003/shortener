@@ -5,7 +5,7 @@ import (
 )
 
 type UseCase interface {
-	NewShortURL(url string) string
+	NewShortURL(url string, baseURL string) string
 	ProcessShortURL(id string) (string, error)
 }
 

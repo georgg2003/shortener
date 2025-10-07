@@ -7,11 +7,10 @@ import (
 )
 
 const shortIDLength = 7
-const serviceURL = "http://localhost:8080"
 
-func (s useCase) NewShortURL(url string) string {
+func (s useCase) NewShortURL(url string, baseURL string) string {
 	shortID := utils.RandomBase62(shortIDLength)
 	s.repository.NewShortURL(url, shortID)
-	shortURL := fmt.Sprintf("%v/%v", serviceURL, shortID)
+	shortURL := fmt.Sprintf("%v/%v", baseURL, shortID)
 	return shortURL
 }
