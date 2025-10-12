@@ -38,8 +38,8 @@ func ReadFromYaml() (*Config, error) {
 }
 
 func ReadFromFlags() Config {
-	listenAddr := flag.String("a", "", "listen addres")
-	baseURL := flag.String("b", "", "base url")
+	listenAddr := flag.String("a", "localhost:8080", "listen addres")
+	baseURL := flag.String("b", "http://localhost:8080", "base url")
 	flag.Parse()
 
 	return Config{
