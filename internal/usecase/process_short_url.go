@@ -1,6 +1,6 @@
 package usecase
 
-func (s useCase) ProcessShortURL(id string) (string, error) {
-	longURL, err := s.repository.GetLongURL(id)
+func (uc useCase) ProcessShortURL(id string) (string, error) {
+	longURL, err := uc.repository.GetLongURL(id)
 	return longURL, err
 }
