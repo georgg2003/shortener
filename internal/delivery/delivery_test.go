@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/delivery"
 	"github.com/georgg2003/shortener/internal/repository"
 	"github.com/georgg2003/shortener/internal/usecase"
@@ -45,13 +46,20 @@ func testRequest(
 }
 
 func TestDelivery(t *testing.T) {
+	ts := httptest.NewServer(nil)
+
+	conf := &config.Config{
+		BaseURL:    ts.URL,
+		ListenAddr: ts.URL,
+	}
 	repo := repository.New()
-	usecase := usecase.New(repo)
+	usecase := usecase.New(repo, conf)
 	delivery := delivery.New(usecase)
 
 	r := delivery.GetNewRouter()
 
-	ts := httptest.NewServer(r)
+	ts.Config.Handler = r
+
 	defer ts.Close()
 
 	testCases := []TestCase{

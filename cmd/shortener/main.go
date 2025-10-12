@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 
@@ -11,13 +12,16 @@ import (
 )
 
 func main() {
-	conf, err := config.ReadFromYaml()
+	configFilename := flag.String("config", "", "config filename")
+	flag.Parse()
+
+	conf, err := config.ReadFromYaml(*configFilename)
 	if err != nil || conf == nil {
 		log.Fatal("Failed to init config")
 	}
 
 	repo := repository.New()
-	usecase := usecase.New(repo, *conf)
+	usecase := usecase.New(repo, conf)
 	delivery := delivery.New(usecase)
 
 	r := delivery.GetNewRouter()

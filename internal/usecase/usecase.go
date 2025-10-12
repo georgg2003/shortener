@@ -12,10 +12,10 @@ type UseCase interface {
 
 type useCase struct {
 	repository repo.Repository
-	config     config.Config
+	config     *config.Config
 }
 
-func New(repo repo.Repository, conf config.Config) UseCase {
+func New(repo repo.Repository, conf *config.Config) UseCase {
 	return useCase{
 		repository: repo,
 		config:     conf,

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"flag"
 	"os"
 
 	"github.com/mitchellh/mapstructure"
@@ -13,11 +12,8 @@ type Config struct {
 	BaseURL    string `mapstructure:"base_url"`
 }
 
-func ReadFromYaml() (*Config, error) {
-	configFilename := flag.String("config", "", "config filename")
-	flag.Parse()
-
-	f, err := os.ReadFile(*configFilename)
+func ReadFromYaml(filename string) (*Config, error) {
+	f, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
