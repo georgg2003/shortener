@@ -33,15 +33,7 @@ func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	host := r.Host
-	scheme := "http"
-	if r.TLS != nil {
-		scheme = "https"
-	}
-
-	baseURL := fmt.Sprintf("%s://%s", scheme, host)
-
-	shortURL := d.usecase.NewShortURL(longURL, baseURL)
+	shortURL := d.usecase.NewShortURL(longURL)
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(shortURL)))

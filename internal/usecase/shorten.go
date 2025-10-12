@@ -8,9 +8,9 @@ import (
 
 const shortIDLength = 7
 
-func (s useCase) NewShortURL(url string, baseURL string) string {
+func (uc useCase) NewShortURL(url string) string {
 	shortID := utils.RandomBase62(shortIDLength)
-	s.repository.NewShortURL(url, shortID)
-	shortURL := fmt.Sprintf("%v/%v", baseURL, shortID)
+	uc.repository.NewShortURL(url, shortID)
+	shortURL := fmt.Sprintf("%v/%v", uc.config.BaseURL, shortID)
 	return shortURL
 }
