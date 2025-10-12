@@ -19,5 +19,6 @@ func main() {
 
 	r := delivery.GetNewRouter()
 
+	log.Printf("Listening on %v", conf.ListenAddr)
 	log.Fatal(http.ListenAndServe(conf.ListenAddr, r))
 }
