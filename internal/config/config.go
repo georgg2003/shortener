@@ -23,13 +23,17 @@ func ReadFromYaml() (*Config, error) {
 	}
 
 	var c Config
-	var raw interface{}
+	var raw any
 
 	if err := yaml.Unmarshal(f, &raw); err != nil {
 		return nil, err
 	}
 
-	decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{WeaklyTypedInput: true, Result: &c})
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{WeaklyTypedInput: true, Result: &c})
+	if err != nil {
+		return nil, err
+	}
+
 	if err := decoder.Decode(raw); err != nil {
 		return nil, err
 	}

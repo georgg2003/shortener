@@ -1,13 +1,15 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/georgg2003/shortener/internal/config"
 	repo "github.com/georgg2003/shortener/internal/repository"
 )
 
 type UseCase interface {
-	NewShortURL(url string) string
-	ProcessShortURL(id string) (string, error)
+	NewShortURL(ctx context.Context, url string) string
+	ProcessShortURL(ctx context.Context, id string) (string, error)
 }
 
 type useCase struct {

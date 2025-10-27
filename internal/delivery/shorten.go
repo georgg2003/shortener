@@ -9,6 +9,7 @@ import (
 
 func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+	ctx := r.Context()
 
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil || len(bytes) == 0 {
@@ -33,7 +34,7 @@ func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortURL := d.usecase.NewShortURL(longURL)
+	shortURL := d.usecase.NewShortURL(ctx, longURL)
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(shortURL)))

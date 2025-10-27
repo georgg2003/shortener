@@ -1,20 +1,23 @@
 package repository
 
-import "github.com/georgg2003/shortener/internal/models"
+import (
+	"context"
+	"sync"
+)
 
 type Repository interface {
-	NewShortURL(url string, shortID string)
-	GetLongURL(shortID string) (string, error)
+	NewShortURL(ctx context.Context, url string, shortID string)
+	GetLongURL(ctx context.Context, shortID string) (string, error)
 }
 
 type repository struct {
-	storage map[string]models.ShortURL
+	storage *sync.Map
 }
 
 func New() Repository {
-	storage := make(map[string]models.ShortURL)
+	storage := sync.Map{}
 
 	return repository{
-		storage: storage,
+		storage: &storage,
 	}
 }
