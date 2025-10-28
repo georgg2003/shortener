@@ -11,10 +11,12 @@ import (
 )
 
 func main() {
-	conf := config.ReadFromFlags()
+	conf := config.New()
+	conf.ReadFromEnv()
+	conf.ReadFromFlags()
 
 	repo := repository.New()
-	usecase := usecase.New(repo, &conf)
+	usecase := usecase.New(repo, conf)
 	delivery := delivery.New(usecase)
 
 	r := delivery.GetNewRouter()
