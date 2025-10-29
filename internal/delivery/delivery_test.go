@@ -11,6 +11,7 @@ import (
 	"github.com/georgg2003/shortener/internal/repository"
 	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/go-resty/resty/v2"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -47,6 +48,7 @@ func testRequest(
 
 func TestDelivery(t *testing.T) {
 	ts := httptest.NewServer(nil)
+	logger := logrus.New()
 
 	conf := &config.Config{
 		BaseURL:    ts.URL,
@@ -54,7 +56,7 @@ func TestDelivery(t *testing.T) {
 	}
 	repo := repository.New()
 	usecase := usecase.New(repo, conf)
-	delivery := delivery.New(usecase)
+	delivery := delivery.New(usecase, logger)
 
 	r := delivery.GetNewRouter()
 

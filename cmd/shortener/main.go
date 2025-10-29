@@ -8,6 +8,7 @@ import (
 	"github.com/georgg2003/shortener/internal/delivery"
 	"github.com/georgg2003/shortener/internal/repository"
 	"github.com/georgg2003/shortener/internal/usecase"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -15,9 +16,12 @@ func main() {
 	conf.ReadFromEnv()
 	conf.ReadFromFlags()
 
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.JSONFormatter{})
+
 	repo := repository.New()
 	usecase := usecase.New(repo, conf)
-	delivery := delivery.New(usecase)
+	delivery := delivery.New(usecase, logger)
 
 	r := delivery.GetNewRouter()
 
