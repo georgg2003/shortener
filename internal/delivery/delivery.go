@@ -36,6 +36,8 @@ func (d delivery) GetNewRouter() chi.Router {
 
 	r.Use(middlewares.NewAccessLogMiddleware(d.logger))
 
+	r.Post("/api/shorten", d.APIShortenURL)
+
 	r.Post("/", d.ShortenURL)
 	r.Get("/{id}", d.ProcessShortURL)
 
