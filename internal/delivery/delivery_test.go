@@ -1,6 +1,7 @@
 package delivery_test
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -8,9 +9,11 @@ import (
 
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/delivery"
+	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/internal/repository"
 	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/go-resty/resty/v2"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -47,6 +50,7 @@ func testRequest(
 
 func TestDelivery(t *testing.T) {
 	ts := httptest.NewServer(nil)
+	logger := logrus.New()
 
 	conf := &config.Config{
 		BaseURL:    ts.URL,
@@ -54,7 +58,7 @@ func TestDelivery(t *testing.T) {
 	}
 	repo := repository.New()
 	usecase := usecase.New(repo, conf)
-	delivery := delivery.New(usecase)
+	delivery := delivery.New(usecase, logger)
 
 	r := delivery.GetNewRouter()
 
@@ -112,6 +116,51 @@ func TestDelivery(t *testing.T) {
 				if statusCode == http.StatusCreated {
 					b := res.Body()
 					shortURL = string(b)
+
+					require.NotEmpty(t, shortURL)
+				}
+			})
+
+			t.Run("processShortURL", func(t *testing.T) {
+				if shortURL == "" {
+					t.Skip("Skipping test because shortURL was not get")
+				}
+				if test.wrongShortID {
+					shortURL = "https://google.com/wrong_id"
+				}
+
+				t.Logf("Making request to %v", shortURL)
+
+				res := testRequest(t, ts, test.processMethod, shortURL, nil)
+				statusCode := res.StatusCode()
+
+				assert.Equal(t, test.processExpectedStatusCode, statusCode)
+				if statusCode == http.StatusTemporaryRedirect {
+					assert.Equal(t, test.testURL, res.Header().Get("Location"))
+				}
+			})
+		})
+	}
+
+	for _, test := range testCases {
+		shortURL := ""
+		t.Run(test.name, func(t *testing.T) {
+			t.Run("shortenAPI", func(t *testing.T) {
+				req := models.APIShortenURLRequest{
+					URL: test.testURL,
+				}
+				body, err := json.Marshal(req)
+				require.NoError(t, err)
+
+				res := testRequest(t, ts, test.shortenMethod, ts.URL+"/api/shorten", body)
+				statusCode := res.StatusCode()
+				assert.Equal(t, test.shortenExpectedStatusCode, statusCode)
+
+				if statusCode == http.StatusCreated {
+					b := res.Body()
+					var resp models.APIShortenURLResponse
+					json.Unmarshal(b, &resp)
+					shortURL = resp.Result
 
 					require.NotEmpty(t, shortURL)
 				}
