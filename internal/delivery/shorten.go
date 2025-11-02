@@ -12,24 +12,24 @@ import (
 )
 
 var (
-	invalidURLError         = errors.New("Invalid url")
-	invalidURLSchemeError   = errors.New("Invalid scheme")
-	invalidURLHostnameError = errors.New("Invalid hostname")
+	errInvalidURL        = errors.New("invalid url")
+	errInvalidURLScheme  = errors.New("invalid scheme")
+	errIvalidURLHostname = errors.New("invalid hostname")
 
-	decodeBodyError = errors.New("failed to decode body")
+	errDecodeBody = errors.New("failed to decode body")
 )
 
 func validateURL(longURL string) error {
 	parsedURL, parseErr := url.Parse(longURL)
 
 	if parseErr != nil {
-		return errors.Join(parseErr, invalidURLError)
+		return errors.Join(parseErr, errInvalidURL)
 	}
 	if parsedURL.Scheme == "" {
-		return invalidURLSchemeError
+		return errInvalidURLScheme
 	}
 	if parsedURL.Hostname() == "" {
-		return invalidURLHostnameError
+		return errIvalidURLHostname
 	}
 
 	return nil
@@ -68,7 +68,7 @@ func (d delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
-		e := errors.Join(err, decodeBodyError)
+		e := errors.Join(err, errDecodeBody)
 		http.Error(w, e.Error(), http.StatusBadRequest)
 		return
 	}
