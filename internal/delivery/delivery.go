@@ -34,7 +34,10 @@ func New(
 func (d delivery) GetNewRouter() chi.Router {
 	r := chi.NewRouter()
 
-	r.Use(middlewares.NewAccessLogMiddleware(d.logger))
+	r.Use(
+		middlewares.NewAccessLogMiddleware(d.logger),
+		middlewares.NewGzipCompressionMiddleware(),
+	)
 
 	r.Post("/api/shorten", d.APIShortenURL)
 
