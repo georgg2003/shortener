@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/georgg2003/shortener/internal/config"
+	"github.com/georgg2003/shortener/internal/repository/storage"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,7 +14,7 @@ type Repository interface {
 }
 
 type repository struct {
-	storage *storage
+	storage *storage.SyncMapStorage
 	cfg     *config.Config
 	logger  *logrus.Logger
 }
@@ -22,8 +23,10 @@ func New(
 	cfg *config.Config,
 	logger *logrus.Logger,
 ) Repository {
-	store := NewStorage(
-		cfg,
+	store := storage.New(
+		&storage.SyncStorageConfig{
+			FileStoragePath: cfg.FileStoragePath,
+		},
 		logger,
 	)
 

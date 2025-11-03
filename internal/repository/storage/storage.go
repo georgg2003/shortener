@@ -1,4 +1,4 @@
-package repository
+package storage
 
 import (
 	"encoding/json"
@@ -6,19 +6,23 @@ import (
 	"sync"
 	"time"
 
-	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/models"
 	"github.com/sirupsen/logrus"
 )
 
-type storage struct {
+type SyncMapStorage struct {
 	sync.Map
 	saveCh chan struct{}
-	cfg    *config.Config
-	logger *logrus.Logger
+	cfg    *SyncStorageConfig
+	logger logrus.FieldLogger
 }
 
-func (s *storage) Store(key, value any) {
+type SyncStorageConfig struct {
+	FileStoragePath  string
+	DebounceDuration *time.Duration
+}
+
+func (s *SyncMapStorage) Store(key, value any) {
 	s.Map.Store(key, value)
 	select {
 	case s.saveCh <- struct{}{}:
@@ -26,7 +30,7 @@ func (s *storage) Store(key, value any) {
 	}
 }
 
-func (r *storage) recoverFromFile() {
+func (r *SyncMapStorage) recoverFromFile() {
 	file, err := os.Open(r.cfg.FileStoragePath)
 	if err != nil {
 		r.logger.WithError(err).Error("failed to open file storage")
@@ -49,9 +53,14 @@ func (r *storage) recoverFromFile() {
 	r.logger.Infof("successfully recovered data from file, rows: %d", len(tmp))
 }
 
-func (r *storage) syncWorker() {
+func (r *SyncMapStorage) syncWorker() {
 	for range r.saveCh {
-		time.Sleep(300 * time.Millisecond)
+		duration := 300 * time.Millisecond
+		if r.cfg.DebounceDuration != nil {
+			duration = *r.cfg.DebounceDuration
+		}
+
+		time.Sleep(duration)
 		tmp := make([]models.ShortURL, 0)
 
 		r.Map.Range(func(key, value any) bool {
@@ -72,13 +81,13 @@ func (r *storage) syncWorker() {
 	}
 }
 
-func NewStorage(
-	cfg *config.Config,
-	logger *logrus.Logger,
-) *storage {
+func New(
+	cfg *SyncStorageConfig,
+	logger logrus.FieldLogger,
+) *SyncMapStorage {
 	saveCh := make(chan struct{}, 1)
 
-	store := storage{
+	store := SyncMapStorage{
 		saveCh: saveCh,
 		cfg:    cfg,
 		logger: logger,
