@@ -59,12 +59,11 @@ func (s *SyncMapStorage) recoverFromFile() {
 
 func (s *SyncMapStorage) syncWorker() {
 	for range s.saveCh {
-		duration := 300 * time.Millisecond
 		if s.cfg.DebounceDuration != nil {
-			duration = *s.cfg.DebounceDuration
+			duration := *s.cfg.DebounceDuration
+			time.Sleep(duration)
 		}
 
-		time.Sleep(duration)
 		tmp := make([]models.ShortURL, 0)
 
 		s.Map.Range(func(key, value any) bool {
