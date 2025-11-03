@@ -32,6 +32,10 @@ func (s *SyncMapStorage) Store(key, value any) {
 
 func (s *SyncMapStorage) recoverFromFile() {
 	file, err := os.Open(s.cfg.FileStoragePath)
+	if os.IsNotExist(err) {
+		s.logger.WithError(err).Info("file does not exist")
+		return
+	}
 	if err != nil {
 		s.logger.WithError(err).Error("failed to open file storage")
 		return
@@ -77,10 +81,17 @@ func (s *SyncMapStorage) syncWorker() {
 			continue
 		}
 
-		err = os.WriteFile(s.cfg.FileStoragePath, bytes, 0644)
+		err = os.WriteFile(s.cfg.FileStoragePath, bytes, 0666)
 		if err != nil {
 			s.logger.WithError(err).Error("failed to write data to file")
 		}
+
+		s.logger.WithFields(
+			logrus.Fields{
+				"file_path": s.cfg.FileStoragePath,
+				"bytes":     len(bytes),
+			},
+		).Infof("successfully written data to file storage")
 	}
 }
 
