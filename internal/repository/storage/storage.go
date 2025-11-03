@@ -64,7 +64,10 @@ func (r *SyncMapStorage) syncWorker() {
 		tmp := make([]models.ShortURL, 0)
 
 		r.Map.Range(func(key, value any) bool {
-			tmp = append(tmp, value.(models.ShortURL))
+			v, ok := value.(models.ShortURL)
+			if ok {
+				tmp = append(tmp, v)
+			}
 			return true
 		})
 
