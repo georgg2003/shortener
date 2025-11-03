@@ -6,9 +6,9 @@ import (
 	"github.com/georgg2003/shortener/internal/models"
 )
 
-func (r repository) NewShortURL(ctx context.Context, url string, shortID string) {
-	r.storage.Store(shortID, models.ShortURL{
-		ShortID: shortID,
-		LongURL: url,
+func (r repository) NewShortURL(ctx context.Context, url string, shortURL string) {
+	r.storage.Store(shortURL, models.ShortURL{
+		ShortURL: shortURL,
+		LongURL:  url,
 	})
 }

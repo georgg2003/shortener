@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
-	"sync"
+
+	"github.com/georgg2003/shortener/internal/config"
+	"github.com/sirupsen/logrus"
 )
 
 type Repository interface {
@@ -11,13 +13,25 @@ type Repository interface {
 }
 
 type repository struct {
-	storage *sync.Map
+	storage *storage
+	cfg     *config.Config
+	logger  *logrus.Logger
 }
 
-func New() Repository {
-	storage := sync.Map{}
+func New(
+	cfg *config.Config,
+	logger *logrus.Logger,
+) Repository {
+	store := NewStorage(
+		cfg,
+		logger,
+	)
 
-	return repository{
-		storage: &storage,
+	repo := repository{
+		storage: store,
+		cfg:     cfg,
+		logger:  logger,
 	}
+
+	return repo
 }

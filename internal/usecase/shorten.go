@@ -7,7 +7,7 @@ import (
 	"github.com/georgg2003/shortener/pkg/utils"
 )
 
-const shortIDLength = 7
+const shortIDLength = 8
 
 func (uc useCase) NewShortURL(ctx context.Context, url string) string {
 	shortID := utils.RandomBase62(shortIDLength)

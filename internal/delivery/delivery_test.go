@@ -56,7 +56,7 @@ func TestDelivery(t *testing.T) {
 		BaseURL:    ts.URL,
 		ListenAddr: ts.URL,
 	}
-	repo := repository.New()
+	repo := repository.New(conf, logger)
 	usecase := usecase.New(repo, conf)
 	delivery := delivery.New(usecase, logger)
 
