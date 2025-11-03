@@ -30,10 +30,10 @@ func (s *SyncMapStorage) Store(key, value any) {
 	}
 }
 
-func (r *SyncMapStorage) recoverFromFile() {
-	file, err := os.Open(r.cfg.FileStoragePath)
+func (s *SyncMapStorage) recoverFromFile() {
+	file, err := os.Open(s.cfg.FileStoragePath)
 	if err != nil {
-		r.logger.WithError(err).Error("failed to open file storage")
+		s.logger.WithError(err).Error("failed to open file storage")
 		return
 	}
 	defer file.Close()
@@ -42,28 +42,28 @@ func (r *SyncMapStorage) recoverFromFile() {
 
 	tmp := make([]models.ShortURL, 0)
 	if err := decoder.Decode(&tmp); err != nil {
-		r.logger.WithError(err).Error("failed to decode data")
+		s.logger.WithError(err).Error("failed to decode data")
 		return
 	}
 
 	for _, k := range tmp {
-		r.Store(k.ShortURL, k)
+		s.Store(k.ShortURL, k)
 	}
 
-	r.logger.Infof("successfully recovered data from file, rows: %d", len(tmp))
+	s.logger.Infof("successfully recovered data from file, rows: %d", len(tmp))
 }
 
-func (r *SyncMapStorage) syncWorker() {
-	for range r.saveCh {
+func (s *SyncMapStorage) syncWorker() {
+	for range s.saveCh {
 		duration := 300 * time.Millisecond
-		if r.cfg.DebounceDuration != nil {
-			duration = *r.cfg.DebounceDuration
+		if s.cfg.DebounceDuration != nil {
+			duration = *s.cfg.DebounceDuration
 		}
 
 		time.Sleep(duration)
 		tmp := make([]models.ShortURL, 0)
 
-		r.Map.Range(func(key, value any) bool {
+		s.Map.Range(func(key, value any) bool {
 			v, ok := value.(models.ShortURL)
 			if ok {
 				tmp = append(tmp, v)
@@ -73,13 +73,13 @@ func (r *SyncMapStorage) syncWorker() {
 
 		bytes, err := json.MarshalIndent(tmp, "", "  ")
 		if err != nil {
-			r.logger.WithError(err).Error("failed marshal data")
+			s.logger.WithError(err).Error("failed marshal data")
 			continue
 		}
 
-		err = os.WriteFile(r.cfg.FileStoragePath, bytes, 0644)
+		err = os.WriteFile(s.cfg.FileStoragePath, bytes, 0644)
 		if err != nil {
-			r.logger.WithError(err).Error("failed to write data to file")
+			s.logger.WithError(err).Error("failed to write data to file")
 		}
 	}
 }
