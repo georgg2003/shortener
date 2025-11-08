@@ -2,7 +2,10 @@ package repository
 
 import (
 	"context"
-	"sync"
+
+	"github.com/georgg2003/shortener/internal/config"
+	"github.com/georgg2003/shortener/internal/repository/storage"
+	"github.com/sirupsen/logrus"
 )
 
 type Repository interface {
@@ -11,13 +14,27 @@ type Repository interface {
 }
 
 type repository struct {
-	storage *sync.Map
+	storage *storage.SyncMapStorage
+	cfg     *config.Config
+	logger  *logrus.Logger
 }
 
-func New() Repository {
-	storage := sync.Map{}
+func New(
+	cfg *config.Config,
+	logger *logrus.Logger,
+) Repository {
+	store := storage.New(
+		&storage.SyncStorageConfig{
+			FileStoragePath: cfg.FileStoragePath,
+		},
+		logger,
+	)
 
-	return repository{
-		storage: &storage,
+	repo := repository{
+		storage: store,
+		cfg:     cfg,
+		logger:  logger,
 	}
+
+	return repo
 }
