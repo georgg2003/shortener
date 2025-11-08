@@ -4,14 +4,15 @@ import (
 	"flag"
 	"os"
 
+	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
-	ListenAddr      string `mapstructure:"listen_addr"`
-	BaseURL         string `mapstructure:"base_url"`
-	FileStoragePath string `mapstructure:"file_storage_path"`
+	ListenAddr      string `mapstructure:"listen_addr" env:"SERVER_ADDRESS"`
+	BaseURL         string `mapstructure:"base_url" env:"BASE_URL"`
+	FileStoragePath string `mapstructure:"file_storage_path" env:"FILE_STORAGE_PATH"`
 }
 
 func New() *Config {
@@ -66,19 +67,6 @@ func (c *Config) ReadFromFlags() {
 	}
 }
 
-func (c *Config) ReadFromEnv() {
-	listenAddr, ok := os.LookupEnv("SERVER_ADDRESS")
-	if ok {
-		c.ListenAddr = listenAddr
-	}
-
-	baseURL, ok := os.LookupEnv("BASE_URL")
-	if ok {
-		c.BaseURL = baseURL
-	}
-
-	fileStoragePath, ok := os.LookupEnv("FILE_STORAGE_PATH")
-	if ok {
-		c.FileStoragePath = fileStoragePath
-	}
+func (c *Config) ReadFromEnv() error {
+	return cleanenv.ReadEnv(c)
 }
