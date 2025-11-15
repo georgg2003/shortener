@@ -68,7 +68,7 @@ func (c *Config) ReadFromFlags() {
 	if fileStoragePath != nil && *fileStoragePath != "" {
 		c.FileStoragePath = *fileStoragePath
 	}
-	if dataBaseDSN != nil && *fileStoragePath != "" {
+	if dataBaseDSN != nil && *dataBaseDSN != "" {
 		c.DataBaseDSN = *dataBaseDSN
 	}
 }
