@@ -18,26 +18,35 @@ type gzipWriter struct {
 	gz *gzip.Writer
 }
 
-func (w gzipWriter) Write(b []byte) (int, error) {
+func (w gzipWriter) isCompressable() bool {
 	contentTypeHeader := w.Header().Get("Content-Type")
 	for _, ct := range compressableContentTypes {
 		if strings.Contains(contentTypeHeader, ct) {
-			return w.gz.Write(b)
+			return true
 		}
+	}
+	return false
+}
+
+func (w gzipWriter) Write(b []byte) (int, error) {
+	if w.isCompressable() {
+		return w.gz.Write(b)
 	}
 	return w.ResponseWriter.Write(b)
 }
 
 func (w gzipWriter) WriteHeader(statusCode int) {
-	if statusCode < 300 {
-		contentTypeHeader := w.Header().Get("Content-Type")
-		for _, ct := range compressableContentTypes {
-			if strings.Contains(contentTypeHeader, ct) {
-				w.ResponseWriter.Header().Set("Content-Encoding", "gzip")
-			}
-		}
+	if w.isCompressable() {
+		w.ResponseWriter.Header().Set("Content-Encoding", "gzip")
 	}
 	w.ResponseWriter.WriteHeader(statusCode)
+}
+
+func (w gzipWriter) Close() error {
+	if w.isCompressable() {
+		return w.gz.Close()
+	}
+	return nil
 }
 
 func NewGzipCompressionMiddleware() func(h http.Handler) http.Handler {
@@ -49,7 +58,7 @@ func NewGzipCompressionMiddleware() func(h http.Handler) http.Handler {
 					gz:             gzip.NewWriter(w),
 				}
 				w = gz
-				defer gz.gz.Close()
+				defer gz.Close()
 			}
 
 			if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {

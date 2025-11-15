@@ -1,6 +1,7 @@
 package delivery_test
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -56,7 +57,11 @@ func TestDelivery(t *testing.T) {
 		BaseURL:    ts.URL,
 		ListenAddr: ts.URL,
 	}
-	repo := repository.New(conf, logger)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	repo := repository.New(ctx, conf, logger)
 	usecase := usecase.New(repo, conf)
 	delivery := delivery.New(usecase, logger)
 

@@ -35,7 +35,7 @@ func validateURL(longURL string) error {
 	return nil
 }
 
-func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
+func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	ctx := r.Context()
 
@@ -49,6 +49,7 @@ func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	if err = validateURL(longURL); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	shortURL := d.usecase.NewShortURL(ctx, longURL)
@@ -60,7 +61,7 @@ func (d delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(shortURL))
 }
 
-func (d delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
+func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	ctx := r.Context()
 

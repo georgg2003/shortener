@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -18,8 +19,12 @@ func main() {
 
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.SetLevel(logrus.DebugLevel)
 
-	repo := repository.New(conf, logger)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	repo := repository.New(ctx, conf, logger)
 	usecase := usecase.New(repo, conf)
 	delivery := delivery.New(usecase, logger)
 

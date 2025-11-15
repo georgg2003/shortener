@@ -13,6 +13,7 @@ type Config struct {
 	ListenAddr      string `mapstructure:"listen_addr" env:"SERVER_ADDRESS"`
 	BaseURL         string `mapstructure:"base_url" env:"BASE_URL"`
 	FileStoragePath string `mapstructure:"file_storage_path" env:"FILE_STORAGE_PATH"`
+	DataBaseDSN     string `mapstructure:"database_dsn" env:"DATABASE_DSN"`
 }
 
 func New() *Config {
@@ -20,6 +21,7 @@ func New() *Config {
 		ListenAddr:      "localhost:8080",
 		BaseURL:         "http://localhost:8080",
 		FileStoragePath: "./data.json",
+		DataBaseDSN:     "user=shortener password=password host=127.0.0.1 database=shortener port=5432", // "postgresql://shortener:password@127.0.0.1:5432/shortener",
 	}
 }
 
@@ -54,6 +56,7 @@ func (c *Config) ReadFromFlags() {
 	listenAddr := flag.String("a", "", "listen addres")
 	baseURL := flag.String("b", "", "base url")
 	fileStoragePath := flag.String("f", "", "file storage path")
+	dataBaseDSN := flag.String("d", "", "database dsn")
 	flag.Parse()
 
 	if listenAddr != nil && *listenAddr != "" {
@@ -64,6 +67,9 @@ func (c *Config) ReadFromFlags() {
 	}
 	if fileStoragePath != nil && *fileStoragePath != "" {
 		c.FileStoragePath = *fileStoragePath
+	}
+	if dataBaseDSN != nil && *dataBaseDSN != "" {
+		c.DataBaseDSN = *dataBaseDSN
 	}
 }
 
