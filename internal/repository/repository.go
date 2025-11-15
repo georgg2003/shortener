@@ -10,12 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Repository interface {
-	NewShortURL(ctx context.Context, url string, shortID string)
-	GetLongURL(ctx context.Context, shortID string) (string, error)
-	Ping(ctx context.Context) error
-}
-
 type repository struct {
 	storage *storage.SyncMapStorage
 	db      *pgxpool.Pool
@@ -27,7 +21,7 @@ func New(
 	ctx context.Context,
 	cfg *config.Config,
 	logger *logrus.Logger,
-) Repository {
+) *repository {
 	store := storage.New(
 		&storage.SyncStorageConfig{
 			FileStoragePath: cfg.FileStoragePath,
