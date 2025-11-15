@@ -21,7 +21,7 @@ func New() *Config {
 		ListenAddr:      "localhost:8080",
 		BaseURL:         "http://localhost:8080",
 		FileStoragePath: "./data.json",
-		DataBaseDSN:     "localhost:5432",
+		DataBaseDSN:     "postgresql://shortener:password@127.0.0.1:5432/shortener",
 	}
 }
 
@@ -56,6 +56,7 @@ func (c *Config) ReadFromFlags() {
 	listenAddr := flag.String("a", "", "listen addres")
 	baseURL := flag.String("b", "", "base url")
 	fileStoragePath := flag.String("f", "", "file storage path")
+	dataBaseDSN := flag.String("d", "", "database dsn")
 	flag.Parse()
 
 	if listenAddr != nil && *listenAddr != "" {
@@ -66,6 +67,9 @@ func (c *Config) ReadFromFlags() {
 	}
 	if fileStoragePath != nil && *fileStoragePath != "" {
 		c.FileStoragePath = *fileStoragePath
+	}
+	if dataBaseDSN != nil && *fileStoragePath != "" {
+		c.DataBaseDSN = *dataBaseDSN
 	}
 }
 

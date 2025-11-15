@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"os"
 
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/repository/storage"
@@ -29,7 +28,7 @@ func New(
 		logger,
 	)
 
-	poolConfig, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
+	poolConfig, err := pgxpool.ParseConfig(cfg.DataBaseDSN)
 	if err != nil {
 		logger.Fatal("Unable to parse DATABASE_URL:", err)
 	}
