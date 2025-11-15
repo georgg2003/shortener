@@ -19,6 +19,7 @@ func main() {
 
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.SetLevel(logrus.DebugLevel)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

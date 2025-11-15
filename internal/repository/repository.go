@@ -28,6 +28,8 @@ func New(
 		logger,
 	)
 
+	logger.Debugf("making new db connection pool with dsn: %v", cfg.DataBaseDSN)
+
 	poolConfig, err := pgxpool.ParseConfig(cfg.DataBaseDSN)
 	if err != nil {
 		logger.Fatal("Unable to parse DATABASE_URL:", err)

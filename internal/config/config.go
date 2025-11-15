@@ -21,7 +21,7 @@ func New() *Config {
 		ListenAddr:      "localhost:8080",
 		BaseURL:         "http://localhost:8080",
 		FileStoragePath: "./data.json",
-		DataBaseDSN:     "postgresql://shortener:password@127.0.0.1:5432/shortener",
+		DataBaseDSN:     "user=shortener password=password host=127.0.0.1 database=shortener port=5432", // "postgresql://shortener:password@127.0.0.1:5432/shortener",
 	}
 }
 
