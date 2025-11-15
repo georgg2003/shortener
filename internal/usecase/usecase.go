@@ -10,6 +10,7 @@ import (
 type UseCase interface {
 	NewShortURL(ctx context.Context, url string) string
 	ProcessShortURL(ctx context.Context, id string) (string, error)
+	Ping(ctx context.Context) error
 }
 
 type useCase struct {
@@ -18,7 +19,7 @@ type useCase struct {
 }
 
 func New(repo repo.Repository, conf *config.Config) UseCase {
-	return useCase{
+	return &useCase{
 		repository: repo,
 		config:     conf,
 	}

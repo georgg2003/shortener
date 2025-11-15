@@ -25,13 +25,13 @@ func New(
 	usecase usecase.UseCase,
 	logger *logrus.Logger,
 ) Delivery {
-	return delivery{
+	return &delivery{
 		usecase: usecase,
 		logger:  logger,
 	}
 }
 
-func (d delivery) GetNewRouter() chi.Router {
+func (d *delivery) GetNewRouter() chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(
@@ -43,6 +43,7 @@ func (d delivery) GetNewRouter() chi.Router {
 
 	r.Post("/", d.ShortenURL)
 	r.Get("/{id}", d.ProcessShortURL)
+	r.Get("/ping", d.Ping)
 
 	return r
 }

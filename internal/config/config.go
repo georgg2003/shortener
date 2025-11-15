@@ -13,6 +13,7 @@ type Config struct {
 	ListenAddr      string `mapstructure:"listen_addr" env:"SERVER_ADDRESS"`
 	BaseURL         string `mapstructure:"base_url" env:"BASE_URL"`
 	FileStoragePath string `mapstructure:"file_storage_path" env:"FILE_STORAGE_PATH"`
+	DataBaseDSN     string `mapstructure:"database_dsn" env:"DATABASE_DSN"`
 }
 
 func New() *Config {
@@ -20,6 +21,7 @@ func New() *Config {
 		ListenAddr:      "localhost:8080",
 		BaseURL:         "http://localhost:8080",
 		FileStoragePath: "./data.json",
+		DataBaseDSN:     "localhost:5432",
 	}
 }
 
