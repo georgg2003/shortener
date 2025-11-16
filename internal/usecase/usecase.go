@@ -8,7 +8,7 @@ import (
 
 //go:generate mockgen -destination ./mock/mock.go -package mock . Repository
 type Repository interface {
-	NewShortURL(ctx context.Context, url string, shortID string)
+	NewShortURL(ctx context.Context, url string, shortID string) error
 	GetLongURL(ctx context.Context, shortID string) (string, error)
 	Ping(ctx context.Context) error
 }

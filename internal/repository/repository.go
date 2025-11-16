@@ -2,12 +2,16 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/repository/storage"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 )
+
+var errFailedToAcquireConnection = errors.New("failed to acquire db conn")
+var errFailedToScan = errors.New("failed to scan a row")
 
 type repository struct {
 	storage *storage.SyncMapStorage

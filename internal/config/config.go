@@ -14,6 +14,7 @@ type Config struct {
 	BaseURL         string `mapstructure:"base_url" env:"BASE_URL"`
 	FileStoragePath string `mapstructure:"file_storage_path" env:"FILE_STORAGE_PATH"`
 	DataBaseDSN     string `mapstructure:"database_dsn" env:"DATABASE_DSN"`
+	PostgresEnabled bool   `mapstructure:"postgres_enabled" env:"POSTGRES_ENABLED"`
 }
 
 func New() *Config {
@@ -22,6 +23,7 @@ func New() *Config {
 		BaseURL:         "http://localhost:8080",
 		FileStoragePath: "./data.json",
 		DataBaseDSN:     "user=shortener password=password host=127.0.0.1 database=shortener port=5432", // "postgresql://shortener:password@127.0.0.1:5432/shortener",
+		PostgresEnabled: true,
 	}
 }
 

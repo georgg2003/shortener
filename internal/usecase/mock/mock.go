@@ -56,9 +56,11 @@ func (mr *MockRepositoryMockRecorder) GetLongURL(ctx, shortID any) *gomock.Call 
 }
 
 // NewShortURL mocks base method.
-func (m *MockRepository) NewShortURL(ctx context.Context, url, shortID string) {
+func (m *MockRepository) NewShortURL(ctx context.Context, url, shortID string) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "NewShortURL", ctx, url, shortID)
+	ret := m.ctrl.Call(m, "NewShortURL", ctx, url, shortID)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // NewShortURL indicates an expected call of NewShortURL.
