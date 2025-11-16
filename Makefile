@@ -7,4 +7,4 @@ migrate:
 	migrate -database "postgres://shortener:password@localhost:5432/shortener?sslmode=disable" -path ./migrations up
 
 run:
-	go run ./...
+	go run ./... -d "postgresql://shortener:password@127.0.0.1:5432/shortener"

@@ -35,7 +35,7 @@ func (r *repository) newShortURLInDB(ctx context.Context, url string, shortURL s
 }
 
 func (r *repository) NewShortURL(ctx context.Context, url string, shortURL string) error {
-	if r.cfg.PostgresEnabled {
+	if r.cfg.DataBaseDSN != "" {
 		return r.newShortURLInDB(ctx, url, shortURL)
 	}
 	return r.newShortURLInStorage(ctx, url, shortURL)

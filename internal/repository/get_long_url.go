@@ -50,7 +50,7 @@ func (r *repository) getLongURLFromDB(ctx context.Context, shortURL string) (str
 }
 
 func (r *repository) GetLongURL(ctx context.Context, shortID string) (string, error) {
-	if r.cfg.PostgresEnabled {
+	if r.cfg.DataBaseDSN != "" {
 		return r.getLongURLFromDB(ctx, shortID)
 	}
 	return r.getLongURLFromStorage(ctx, shortID)
