@@ -1,6 +1,7 @@
 package delivery_test
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/delivery"
 	"github.com/georgg2003/shortener/internal/models"
-	"github.com/georgg2003/shortener/internal/repository"
+	"github.com/georgg2003/shortener/internal/repository/storage"
 	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
@@ -56,7 +57,11 @@ func TestDelivery(t *testing.T) {
 		BaseURL:    ts.URL,
 		ListenAddr: ts.URL,
 	}
-	repo := repository.New(conf, logger)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	repo := storage.New(ctx, conf, logger)
 	usecase := usecase.New(repo, conf)
 	delivery := delivery.New(usecase, logger)
 

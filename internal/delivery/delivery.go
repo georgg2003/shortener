@@ -1,37 +1,43 @@
 package delivery
 
 import (
-	"net/http"
+	"context"
 
-	"github.com/georgg2003/shortener/internal/usecase"
+	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/pkg/middlewares"
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
 )
 
-type Delivery interface {
-	ShortenURL(w http.ResponseWriter, r *http.Request)
-	ProcessShortURL(w http.ResponseWriter, r *http.Request)
+const internalErrorText = "Internal Error"
 
+type Delivery interface {
 	GetNewRouter() chi.Router
 }
 
+type UseCase interface {
+	NewShortURL(ctx context.Context, url string) (string, error)
+	NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error
+	ProcessShortURL(ctx context.Context, id string) (string, error)
+	Ping(ctx context.Context) error
+}
+
 type delivery struct {
-	usecase usecase.UseCase
+	usecase UseCase
 	logger  *logrus.Logger
 }
 
 func New(
-	usecase usecase.UseCase,
+	usecase UseCase,
 	logger *logrus.Logger,
 ) Delivery {
-	return delivery{
+	return &delivery{
 		usecase: usecase,
 		logger:  logger,
 	}
 }
 
-func (d delivery) GetNewRouter() chi.Router {
+func (d *delivery) GetNewRouter() chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(
@@ -40,9 +46,11 @@ func (d delivery) GetNewRouter() chi.Router {
 	)
 
 	r.Post("/api/shorten", d.APIShortenURL)
+	r.Post("/api/shorten/batch", d.APIShortenURLBatch)
 
 	r.Post("/", d.ShortenURL)
 	r.Get("/{id}", d.ProcessShortURL)
+	r.Get("/ping", d.Ping)
 
 	return r
 }

@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/delivery"
-	"github.com/georgg2003/shortener/internal/repository"
+	"github.com/georgg2003/shortener/internal/repository/postgres"
+	"github.com/georgg2003/shortener/internal/repository/storage"
 	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/sirupsen/logrus"
 )
@@ -18,8 +20,18 @@ func main() {
 
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.SetLevel(logrus.DebugLevel)
 
-	repo := repository.New(conf, logger)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	var repo usecase.Repository
+	if conf.DataBaseDSN != "" {
+		repo = postgres.New(ctx, conf, logger)
+	} else {
+		repo = storage.New(ctx, conf, logger)
+	}
+
 	usecase := usecase.New(repo, conf)
 	delivery := delivery.New(usecase, logger)
 
