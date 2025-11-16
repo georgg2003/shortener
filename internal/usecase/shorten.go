@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/pkg/utils"
@@ -30,8 +29,6 @@ func (uc *useCase) NewShortURLBatch(ctx context.Context, entities []*models.URLE
 		v.ShortID = shortID
 		v.ShortURL = fmt.Sprintf("%v/%v", uc.config.BaseURL, shortID)
 	}
-
-	log.Println(entities)
 
 	err := uc.repository.NewShortURLBatch(ctx, entities)
 	if err != nil {
