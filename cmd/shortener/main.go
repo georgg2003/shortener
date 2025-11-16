@@ -7,7 +7,8 @@ import (
 
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/delivery"
-	"github.com/georgg2003/shortener/internal/repository"
+	"github.com/georgg2003/shortener/internal/repository/postgres"
+	"github.com/georgg2003/shortener/internal/repository/storage"
 	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/sirupsen/logrus"
 )
@@ -24,7 +25,13 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	repo := repository.New(ctx, conf, logger)
+	var repo usecase.Repository
+	if conf.DataBaseDSN != "" {
+		repo = postgres.New(ctx, conf, logger)
+	} else {
+		repo = storage.New(ctx, conf, logger)
+	}
+
 	usecase := usecase.New(repo, conf)
 	delivery := delivery.New(usecase, logger)
 
