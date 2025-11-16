@@ -8,6 +8,10 @@ import (
 	"github.com/georgg2003/shortener/internal/repository/storage"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 var errFailedToAcquireConnection = errors.New("failed to acquire db conn")
@@ -32,16 +36,30 @@ func New(
 		logger,
 	)
 
-	logger.Debugf("making new db connection pool with dsn: %v", cfg.DataBaseDSN)
+	var db *pgxpool.Pool
+	if cfg.DataBaseDSN != "" {
+		logger.Debugf("making new db connection pool with dsn: %v", cfg.DataBaseDSN)
 
-	poolConfig, err := pgxpool.ParseConfig(cfg.DataBaseDSN)
-	if err != nil {
-		logger.Fatal("Unable to parse DATABASE_URL:", err)
-	}
+		poolConfig, err := pgxpool.ParseConfig(cfg.DataBaseDSN)
+		if err != nil {
+			logger.WithError(err).Fatal("unable to parse DATABASE_URL")
+		}
 
-	db, err := pgxpool.NewWithConfig(ctx, poolConfig)
-	if err != nil {
-		logger.Fatal("Unable to create connection pool:", err)
+		db, err = pgxpool.NewWithConfig(ctx, poolConfig)
+		if err != nil {
+			logger.WithError(err).Fatal("unable to create connection pool")
+		}
+
+		m, err := migrate.New("file://migrations", cfg.DataBaseDSN)
+		if err != nil {
+			logger.WithError(err).Fatal("failed to create migrate instance")
+		}
+
+		err = m.Up()
+		if err != nil && err != migrate.ErrNoChange {
+			logger.WithError(err).Fatal("failed to migrate")
+		}
+		logger.Info("db successfully migrated")
 	}
 
 	return &repository{
