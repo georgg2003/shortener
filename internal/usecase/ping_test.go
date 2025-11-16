@@ -18,7 +18,7 @@ type TestCase struct {
 	expectedReturn     error
 }
 
-var someErr = errors.New("some connection error")
+var errConnectionFailed = errors.New("some connection error")
 
 func TestPing(t *testing.T) {
 
@@ -37,8 +37,8 @@ func TestPing(t *testing.T) {
 		},
 		{
 			name:               "error",
-			expectedRepoReturn: someErr,
-			expectedReturn:     someErr,
+			expectedRepoReturn: errConnectionFailed,
+			expectedReturn:     errConnectionFailed,
 		},
 	}
 
