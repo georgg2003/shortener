@@ -52,7 +52,12 @@ func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortURL := d.usecase.NewShortURL(ctx, longURL)
+	shortURL, err := d.usecase.NewShortURL(ctx, longURL)
+	if err != nil {
+		d.logger.WithError(err).Error("failed to add a new short url")
+		http.Error(w, internalErrorText, http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(shortURL)))
@@ -79,10 +84,65 @@ func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortURL := d.usecase.NewShortURL(ctx, req.URL)
+	shortURL, err := d.usecase.NewShortURL(ctx, req.URL)
+	if err != nil {
+		d.logger.WithError(err).Error("failed to create a new short url")
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
 
 	response := models.APIShortenURLResponse{
 		Result: shortURL,
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusCreated)
+
+	encoder := json.NewEncoder(w)
+	if err := encoder.Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (d *delivery) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	ctx := r.Context()
+
+	var req models.APIShortenURLBatchRequest
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&req); err != nil {
+		e := errors.Join(err, errDecodeBody)
+		http.Error(w, e.Error(), http.StatusBadRequest)
+		return
+	}
+
+	entities := make([]*models.URLEntity, 0, len(req))
+	for _, v := range req {
+		if err := validateURL(v.OriginalURL); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		entities = append(entities, &models.URLEntity{
+			CorrelationID: v.CorrelationID,
+			OriginalURL:   v.OriginalURL,
+		})
+	}
+
+	err := d.usecase.NewShortURLBatch(ctx, entities)
+	if err != nil {
+		d.logger.WithError(err).Error("failed to add batch of urls")
+		http.Error(w, internalErrorText, http.StatusInternalServerError)
+		return
+	}
+
+	response := make(models.APIShortenURLBatchResponse, 0, len(entities))
+	for _, v := range entities {
+		response = append(response, models.APIShortenURLBatchResponseRecord{
+			CorrelationID: v.CorrelationID,
+			ShortURL:      v.ShortURL,
+		})
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")

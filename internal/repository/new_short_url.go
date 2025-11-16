@@ -9,15 +9,15 @@ import (
 
 var errFailedToInsertNewShortURL = errors.New("failed to insert new short url")
 
-func (r *repository) newShortURLInStorage(ctx context.Context, url string, shortURL string) error {
-	r.storage.Store(shortURL, models.ShortURL{
-		ShortURL: shortURL,
+func (r *repository) newShortURLInStorage(ctx context.Context, url string, shortID string) error {
+	r.storage.Store(shortID, models.ShortURL{
+		ShortURL: shortID,
 		LongURL:  url,
 	})
 	return nil
 }
 
-func (r *repository) newShortURLInDB(ctx context.Context, url string, shortURL string) error {
+func (r *repository) newShortURLInDB(ctx context.Context, url string, shortID string) error {
 	conn, err := r.db.Acquire(ctx)
 	if err != nil {
 		err = errors.Join(err, errFailedToAcquireConnection)
@@ -25,7 +25,7 @@ func (r *repository) newShortURLInDB(ctx context.Context, url string, shortURL s
 	}
 	defer conn.Release()
 
-	_, err = conn.Exec(ctx, "INSERT INTO short_url (short_url, long_url) VALUES ($1, $2)", shortURL, url)
+	_, err = conn.Exec(ctx, "INSERT INTO url_entity (short_id, original_url) VALUES ($1, $2)", shortID, url)
 	if err != nil {
 		err = errors.Join(err, errFailedToInsertNewShortURL)
 		return err
@@ -34,9 +34,9 @@ func (r *repository) newShortURLInDB(ctx context.Context, url string, shortURL s
 	return nil
 }
 
-func (r *repository) NewShortURL(ctx context.Context, url string, shortURL string) error {
+func (r *repository) NewShortURL(ctx context.Context, url string, shortID string) error {
 	if r.cfg.DataBaseDSN != "" {
-		return r.newShortURLInDB(ctx, url, shortURL)
+		return r.newShortURLInDB(ctx, url, shortID)
 	}
-	return r.newShortURLInStorage(ctx, url, shortURL)
+	return r.newShortURLInStorage(ctx, url, shortID)
 }

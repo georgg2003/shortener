@@ -15,6 +15,7 @@ import (
 )
 
 var errFailedToAcquireConnection = errors.New("failed to acquire db conn")
+var errFailedToBeginTransaction = errors.New("failed to begin transaction")
 var errFailedToScan = errors.New("failed to scan a row")
 
 type repository struct {

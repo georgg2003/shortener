@@ -25,7 +25,7 @@ func (r *repository) getLongURLFromStorage(ctx context.Context, shortID string) 
 	return shortURLModel.LongURL, nil
 }
 
-func (r *repository) getLongURLFromDB(ctx context.Context, shortURL string) (string, error) {
+func (r *repository) getLongURLFromDB(ctx context.Context, shortID string) (string, error) {
 	conn, err := r.db.Acquire(ctx)
 	if err != nil {
 		err = errors.Join(err, errFailedToAcquireConnection)
@@ -33,7 +33,7 @@ func (r *repository) getLongURLFromDB(ctx context.Context, shortURL string) (str
 	}
 	defer conn.Release()
 
-	row := conn.QueryRow(ctx, "SELECT long_url FROM short_url WHERE short_url = $1", shortURL)
+	row := conn.QueryRow(ctx, "SELECT original_url FROM url_entity WHERE short_id = $1", shortID)
 
 	var longURL string
 	err = row.Scan(&longURL)

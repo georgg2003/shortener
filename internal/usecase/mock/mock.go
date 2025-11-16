@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	models "github.com/georgg2003/shortener/internal/models"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -67,6 +68,20 @@ func (m *MockRepository) NewShortURL(ctx context.Context, url, shortID string) e
 func (mr *MockRepositoryMockRecorder) NewShortURL(ctx, url, shortID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewShortURL", reflect.TypeOf((*MockRepository)(nil).NewShortURL), ctx, url, shortID)
+}
+
+// NewShortURLBatch mocks base method.
+func (m *MockRepository) NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewShortURLBatch", ctx, entities)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NewShortURLBatch indicates an expected call of NewShortURLBatch.
+func (mr *MockRepositoryMockRecorder) NewShortURLBatch(ctx, entities any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewShortURLBatch", reflect.TypeOf((*MockRepository)(nil).NewShortURLBatch), ctx, entities)
 }
 
 // Ping mocks base method.

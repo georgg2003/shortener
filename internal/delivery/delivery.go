@@ -3,17 +3,21 @@ package delivery
 import (
 	"context"
 
+	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/pkg/middlewares"
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
 )
+
+const internalErrorText = "Internal Error"
 
 type Delivery interface {
 	GetNewRouter() chi.Router
 }
 
 type UseCase interface {
-	NewShortURL(ctx context.Context, url string) string
+	NewShortURL(ctx context.Context, url string) (string, error)
+	NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error
 	ProcessShortURL(ctx context.Context, id string) (string, error)
 	Ping(ctx context.Context) error
 }
@@ -42,6 +46,7 @@ func (d *delivery) GetNewRouter() chi.Router {
 	)
 
 	r.Post("/api/shorten", d.APIShortenURL)
+	r.Post("/api/shorten/batch", d.APIShortenURLBatch)
 
 	r.Post("/", d.ShortenURL)
 	r.Get("/{id}", d.ProcessShortURL)
