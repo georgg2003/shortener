@@ -54,7 +54,7 @@ func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	shortURL, err := d.usecase.NewShortURL(ctx, longURL)
-	if err != nil {
+	if err != nil && !errors.Is(err, usecase.ErrUrlEntityAlreadyExists) {
 		d.logger.WithError(err).Error("failed to add a new short url")
 		http.Error(w, internalErrorText, http.StatusInternalServerError)
 		return
@@ -63,7 +63,11 @@ func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(shortURL)))
 
-	w.WriteHeader(http.StatusCreated)
+	if errors.Is(err, usecase.ErrUrlEntityAlreadyExists) {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
 	w.Write([]byte(shortURL))
 }
 

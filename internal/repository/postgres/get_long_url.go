@@ -12,7 +12,7 @@ import (
 func (r *repository) GetLongURL(ctx context.Context, shortID string) (string, error) {
 	conn, err := r.db.Acquire(ctx)
 	if err != nil {
-		err = utils.ErrWrap(err, errFailedToAcquireConnection)
+		err = utils.ErrWrap(err, errFailedToAcquireConnection.Error())
 		return "", err
 	}
 	defer conn.Release()
@@ -23,9 +23,9 @@ func (r *repository) GetLongURL(ctx context.Context, shortID string) (string, er
 	err = row.Scan(&longURL)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			err = utils.ErrWrap(err, repo.ErrNotFound)
+			err = repo.ErrNotFound
 		} else {
-			err = utils.ErrWrap(err, errFailedToScan)
+			err = utils.ErrWrap(err, errFailedToScan.Error())
 		}
 		return "", err
 	}

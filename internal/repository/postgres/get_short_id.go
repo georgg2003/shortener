@@ -12,7 +12,7 @@ import (
 func (r *repository) GetShortID(ctx context.Context, originalURL string) (string, error) {
 	conn, err := r.db.Acquire(ctx)
 	if err != nil {
-		err = utils.ErrWrap(err, errFailedToAcquireConnection)
+		err = utils.ErrWrap(err, errFailedToAcquireConnection.Error())
 		return "", err
 	}
 	defer conn.Release()
@@ -23,9 +23,9 @@ func (r *repository) GetShortID(ctx context.Context, originalURL string) (string
 	err = row.Scan(&shortID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			err = utils.ErrWrap(err, repo.ErrNotFound)
+			err = repo.ErrNotFound
 		} else {
-			err = utils.ErrWrap(err, errFailedToScan)
+			err = utils.ErrWrap(err, errFailedToScan.Error())
 		}
 		return "", err
 	}

@@ -28,12 +28,12 @@ func (uc *useCase) NewShortURL(ctx context.Context, url string) (string, error) 
 		if postgres.IsUniqueViolation(err) {
 			shortID, err = uc.repository.GetShortID(ctx, url)
 			if err != nil {
-				utils.ErrWrap(err, errFailedToGetShortIDsBatch)
+				utils.ErrWrap(err, errFailedToGetShortIDsBatch.Error())
 				return "", err
 			}
-			err = utils.ErrWrap(err, ErrUrlEntityAlreadyExists)
+			err = ErrUrlEntityAlreadyExists
 		} else {
-			return "", utils.ErrWrap(err, errCreatingNewShortURLFailed)
+			return "", utils.ErrWrap(err, errCreatingNewShortURLFailed.Error())
 		}
 	}
 	shortURL := uc.shortURLFromID(shortID)
@@ -54,7 +54,7 @@ func (uc *useCase) NewShortURLBatch(ctx context.Context, entities []*models.URLE
 		if postgres.IsUniqueViolation(err) {
 			existingIDs, getErr := uc.repository.GetShortIDsBatch(ctx, entities)
 			if getErr != nil {
-				return utils.ErrWrap(getErr, errFailedToGetShortIDsBatch)
+				return utils.ErrWrap(getErr, errFailedToGetShortIDsBatch.Error())
 			}
 			for _, v := range entities {
 				if existingID, ok := existingIDs[v.OriginalURL]; ok {
@@ -62,9 +62,9 @@ func (uc *useCase) NewShortURLBatch(ctx context.Context, entities []*models.URLE
 					v.ShortURL = uc.shortURLFromID(existingID)
 				}
 			}
-			return utils.ErrWrap(err, ErrUrlEntityAlreadyExists)
+			return ErrUrlEntityAlreadyExists
 		}
-		return utils.ErrWrap(err, errCreatingNewShortURLFailed)
+		return utils.ErrWrap(err, errCreatingNewShortURLFailed.Error())
 	}
 
 	return nil

@@ -10,7 +10,7 @@ import (
 func (r *repository) GetShortIDsBatch(ctx context.Context, entities []*models.URLEntity) (map[string]string, error) {
 	conn, err := r.db.Acquire(ctx)
 	if err != nil {
-		err = utils.ErrWrap(err, errFailedToAcquireConnection)
+		err = utils.ErrWrap(err, errFailedToAcquireConnection.Error())
 		return nil, err
 	}
 	defer conn.Release()
