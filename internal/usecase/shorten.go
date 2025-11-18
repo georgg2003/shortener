@@ -19,15 +19,19 @@ func (uc *useCase) shortURLFromID(shortID string) string {
 	return fmt.Sprintf("%v/%v", uc.config.BaseURL, shortID)
 }
 
+var errFailedToGetShortID = errors.New("failed to get short id")
+
 func (uc *useCase) NewShortURL(ctx context.Context, url string) (string, error) {
 	shortID := utils.RandomBase62(shortIDLength)
 	err := uc.repository.NewShortURL(ctx, url, shortID)
 	if err != nil {
 		if postgres.IsUniqueViolation(err) {
 			shortID, err = uc.repository.GetShortID(ctx, url)
-			if err == nil {
-				err = ErrUrlEntityAlreadyExists
+			if err != nil {
+				utils.ErrWrap(err, errFailedToGetShortIDsBatch)
+				return "", err
 			}
+			err = utils.ErrWrap(err, ErrUrlEntityAlreadyExists)
 		} else {
 			return "", utils.ErrWrap(err, errCreatingNewShortURLFailed)
 		}
@@ -35,6 +39,8 @@ func (uc *useCase) NewShortURL(ctx context.Context, url string) (string, error) 
 	shortURL := uc.shortURLFromID(shortID)
 	return shortURL, err
 }
+
+var errFailedToGetShortIDsBatch = errors.New("failed to get short ids batch")
 
 func (uc *useCase) NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error {
 	for _, v := range entities {
@@ -46,14 +52,17 @@ func (uc *useCase) NewShortURLBatch(ctx context.Context, entities []*models.URLE
 	err := uc.repository.NewShortURLBatch(ctx, entities)
 	if err != nil {
 		if postgres.IsUniqueViolation(err) {
-			err := uc.repository.GetShortIDsBatch(ctx, entities)
-			if err == nil {
-				err = ErrUrlEntityAlreadyExists
-				for _, v := range entities {
-					v.ShortURL = uc.shortURLFromID(v.ShortID)
+			existingIDs, getErr := uc.repository.GetShortIDsBatch(ctx, entities)
+			if getErr != nil {
+				return utils.ErrWrap(getErr, errFailedToGetShortIDsBatch)
+			}
+			for _, v := range entities {
+				if existingID, ok := existingIDs[v.OriginalURL]; ok {
+					v.ShortID = existingID
+					v.ShortURL = uc.shortURLFromID(existingID)
 				}
 			}
-			return err
+			return utils.ErrWrap(err, ErrUrlEntityAlreadyExists)
 		}
 		return utils.ErrWrap(err, errCreatingNewShortURLFailed)
 	}

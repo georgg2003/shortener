@@ -72,11 +72,12 @@ func (mr *MockRepositoryMockRecorder) GetShortID(ctx, originalURL any) *gomock.C
 }
 
 // GetShortIDsBatch mocks base method.
-func (m *MockRepository) GetShortIDsBatch(ctx context.Context, entities []*models.URLEntity) error {
+func (m *MockRepository) GetShortIDsBatch(ctx context.Context, entities []*models.URLEntity) (map[string]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetShortIDsBatch", ctx, entities)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(map[string]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetShortIDsBatch indicates an expected call of GetShortIDsBatch.

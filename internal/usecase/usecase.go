@@ -12,7 +12,7 @@ type Repository interface {
 	NewShortURL(ctx context.Context, url string, shortID string) error
 	GetLongURL(ctx context.Context, shortID string) (string, error)
 	GetShortID(ctx context.Context, originalURL string) (string, error)
-	GetShortIDsBatch(ctx context.Context, entities []*models.URLEntity) error
+	GetShortIDsBatch(ctx context.Context, entities []*models.URLEntity) (map[string]string, error)
 	Ping(ctx context.Context) error
 	NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error
 }

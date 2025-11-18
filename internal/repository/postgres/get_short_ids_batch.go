@@ -4,15 +4,14 @@ import (
 	"context"
 
 	"github.com/georgg2003/shortener/internal/models"
-	repo "github.com/georgg2003/shortener/internal/repository"
 	"github.com/georgg2003/shortener/pkg/utils"
 )
 
-func (r *repository) GetShortIDsBatch(ctx context.Context, entities []*models.URLEntity) error {
+func (r *repository) GetShortIDsBatch(ctx context.Context, entities []*models.URLEntity) (map[string]string, error) {
 	conn, err := r.db.Acquire(ctx)
 	if err != nil {
 		err = utils.ErrWrap(err, errFailedToAcquireConnection)
-		return err
+		return nil, err
 	}
 	defer conn.Release()
 
@@ -27,7 +26,7 @@ func (r *repository) GetShortIDsBatch(ctx context.Context, entities []*models.UR
 		WHERE original_url = ANY($1)
 	`, urls)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -35,18 +34,10 @@ func (r *repository) GetShortIDsBatch(ctx context.Context, entities []*models.UR
 	for rows.Next() {
 		var orig, shortID string
 		if err := rows.Scan(&orig, &shortID); err != nil {
-			return err
+			return nil, err
 		}
 		m[orig] = shortID
 	}
 
-	for _, e := range entities {
-		if id, ok := m[e.OriginalURL]; ok {
-			e.ShortID = id
-		} else {
-			return repo.ErrNotFound
-		}
-	}
-
-	return nil
+	return m, err
 }
