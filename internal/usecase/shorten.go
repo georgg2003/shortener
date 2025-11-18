@@ -13,7 +13,7 @@ import (
 const shortIDLength = 8
 
 var errCreatingNewShortURLFailed = errors.New("creation of a new short url was failed")
-var ErrUrlEntityAlreadyExists = errors.New("conflict, url is already shortened")
+var ErrURLEntityAlreadyExists = errors.New("conflict, url is already shortened")
 
 func (uc *useCase) shortURLFromID(shortID string) string {
 	return fmt.Sprintf("%v/%v", uc.config.BaseURL, shortID)
@@ -31,7 +31,7 @@ func (uc *useCase) NewShortURL(ctx context.Context, url string) (string, error) 
 				utils.ErrWrap(err, errFailedToGetShortIDsBatch.Error())
 				return "", err
 			}
-			err = ErrUrlEntityAlreadyExists
+			err = ErrURLEntityAlreadyExists
 		} else {
 			return "", utils.ErrWrap(err, errCreatingNewShortURLFailed.Error())
 		}
@@ -62,7 +62,7 @@ func (uc *useCase) NewShortURLBatch(ctx context.Context, entities []*models.URLE
 					v.ShortURL = uc.shortURLFromID(existingID)
 				}
 			}
-			return ErrUrlEntityAlreadyExists
+			return ErrURLEntityAlreadyExists
 		}
 		return utils.ErrWrap(err, errCreatingNewShortURLFailed.Error())
 	}

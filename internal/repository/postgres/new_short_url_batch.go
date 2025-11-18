@@ -45,7 +45,7 @@ func (r *repository) NewShortURLBatch(ctx context.Context, entities []*models.UR
 	}
 
 	if hasUniqueViolationErr {
-		return postgres.UniqueViolationError
+		return postgres.ErrUniqueViolation
 	}
 
 	return err

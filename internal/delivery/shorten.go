@@ -54,7 +54,7 @@ func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	shortURL, err := d.usecase.NewShortURL(ctx, longURL)
-	if err != nil && !errors.Is(err, usecase.ErrUrlEntityAlreadyExists) {
+	if err != nil && !errors.Is(err, usecase.ErrURLEntityAlreadyExists) {
 		d.logger.WithError(err).Error("failed to add a new short url")
 		http.Error(w, internalErrorText, http.StatusInternalServerError)
 		return
@@ -63,7 +63,7 @@ func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(shortURL)))
 
-	if errors.Is(err, usecase.ErrUrlEntityAlreadyExists) {
+	if errors.Is(err, usecase.ErrURLEntityAlreadyExists) {
 		w.WriteHeader(http.StatusConflict)
 	} else {
 		w.WriteHeader(http.StatusCreated)
@@ -90,7 +90,7 @@ func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	shortURL, err := d.usecase.NewShortURL(ctx, req.URL)
-	if err != nil && !errors.Is(err, usecase.ErrUrlEntityAlreadyExists) {
+	if err != nil && !errors.Is(err, usecase.ErrURLEntityAlreadyExists) {
 		d.logger.WithError(err).Error("failed to create a new short url")
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -101,7 +101,7 @@ func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	if errors.Is(err, usecase.ErrUrlEntityAlreadyExists) {
+	if errors.Is(err, usecase.ErrURLEntityAlreadyExists) {
 		w.WriteHeader(http.StatusConflict)
 	} else {
 		w.WriteHeader(http.StatusCreated)
@@ -140,7 +140,7 @@ func (d *delivery) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := d.usecase.NewShortURLBatch(ctx, entities)
-	if err != nil && !errors.Is(err, usecase.ErrUrlEntityAlreadyExists) {
+	if err != nil && !errors.Is(err, usecase.ErrURLEntityAlreadyExists) {
 		d.logger.WithError(err).Error("failed to add batch of urls")
 		http.Error(w, internalErrorText, http.StatusInternalServerError)
 		return
@@ -155,7 +155,7 @@ func (d *delivery) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	if errors.Is(err, usecase.ErrUrlEntityAlreadyExists) {
+	if errors.Is(err, usecase.ErrURLEntityAlreadyExists) {
 		w.WriteHeader(http.StatusConflict)
 	} else {
 		w.WriteHeader(http.StatusCreated)
