@@ -1,0 +1,2 @@
+ALTER TABLE url_entity
+DROP CONSTRAINT unique_original_url;

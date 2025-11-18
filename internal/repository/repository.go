@@ -2,4 +2,4 @@ package repository
 
 import "errors"
 
-var ErrShortURLNotFound = errors.New("value not found")
+var ErrNotFound = errors.New("value not found")

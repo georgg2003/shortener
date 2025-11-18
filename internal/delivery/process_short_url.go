@@ -19,7 +19,7 @@ func (d delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	longURL, err := d.usecase.ProcessShortURL(ctx, id)
 	if err != nil {
-		if errors.Is(err, repository.ErrShortURLNotFound) {
+		if errors.Is(err, repository.ErrNotFound) {
 			http.Error(w, "Link not found", http.StatusNotFound)
 			return
 		}

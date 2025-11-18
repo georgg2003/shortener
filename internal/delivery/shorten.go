@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/georgg2003/shortener/internal/models"
+	"github.com/georgg2003/shortener/internal/usecase"
 )
 
 var (
@@ -85,7 +86,7 @@ func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	shortURL, err := d.usecase.NewShortURL(ctx, req.URL)
-	if err != nil {
+	if err != nil && !errors.Is(err, usecase.ErrUrlEntityAlreadyExists) {
 		d.logger.WithError(err).Error("failed to create a new short url")
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -96,7 +97,11 @@ func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusCreated)
+	if errors.Is(err, usecase.ErrUrlEntityAlreadyExists) {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
 
 	encoder := json.NewEncoder(w)
 	if err := encoder.Encode(response); err != nil {
@@ -131,7 +136,7 @@ func (d *delivery) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := d.usecase.NewShortURLBatch(ctx, entities)
-	if err != nil {
+	if err != nil && !errors.Is(err, usecase.ErrUrlEntityAlreadyExists) {
 		d.logger.WithError(err).Error("failed to add batch of urls")
 		http.Error(w, internalErrorText, http.StatusInternalServerError)
 		return
@@ -146,7 +151,11 @@ func (d *delivery) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusCreated)
+	if errors.Is(err, usecase.ErrUrlEntityAlreadyExists) {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
 
 	encoder := json.NewEncoder(w)
 	if err := encoder.Encode(response); err != nil {

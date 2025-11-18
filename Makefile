@@ -67,3 +67,9 @@ migrate-up:
 
 migrate-down:
 	$(GOPATH)/bin/migrate -database $(DB_URL) -path $(MIGRATIONS_DIR) down
+
+migrate-new:
+	$(GOPATH)/bin/migrate -database $(DB_URL) create -ext sql -seq -digits 6 -dir $(MIGRATIONS_DIR) $(NAME)
+
+migrate-force:
+	$(GOPATH)/bin/migrate -database $(DB_URL) -path $(MIGRATIONS_DIR) force $(VER)

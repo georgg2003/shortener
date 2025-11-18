@@ -22,7 +22,10 @@ func (r *repository) NewShortURLBatch(ctx context.Context, entities []*models.UR
 	}
 
 	for _, v := range entities {
-		_, err = tx.Exec(ctx, "INSERT INTO url_entity (short_id, original_url) VALUES ($1, $2)", v.ShortID, v.OriginalURL)
+		_, err := tx.Exec(ctx, `
+			INSERT INTO url_entity (short_id, original_url)
+			VALUES ($1, $2)
+		`, v.ShortID, v.OriginalURL)
 		if err != nil {
 			err = errors.Join(err, errFailedToInsertNewShortURL)
 			return err

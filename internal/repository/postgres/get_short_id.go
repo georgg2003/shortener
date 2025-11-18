@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func (r *repository) GetLongURL(ctx context.Context, shortID string) (string, error) {
+func (r *repository) GetShortID(ctx context.Context, originalURL string) (string, error) {
 	conn, err := r.db.Acquire(ctx)
 	if err != nil {
 		err = utils.ErrWrap(err, errFailedToAcquireConnection)
@@ -17,10 +17,10 @@ func (r *repository) GetLongURL(ctx context.Context, shortID string) (string, er
 	}
 	defer conn.Release()
 
-	row := conn.QueryRow(ctx, "SELECT original_url FROM url_entity WHERE short_id = $1", shortID)
+	row := conn.QueryRow(ctx, "SELECT short_id FROM url_entity WHERE original_url = $1", originalURL)
 
-	var longURL string
-	err = row.Scan(&longURL)
+	var shortID string
+	err = row.Scan(&shortID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			err = utils.ErrWrap(err, repo.ErrNotFound)
@@ -30,5 +30,5 @@ func (r *repository) GetLongURL(ctx context.Context, shortID string) (string, er
 		return "", err
 	}
 
-	return longURL, nil
+	return shortID, nil
 }
