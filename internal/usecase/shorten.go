@@ -47,11 +47,11 @@ func (uc *useCase) NewShortURLBatch(ctx context.Context, entities []*models.URLE
 	if err != nil {
 		if postgres.IsUniqueViolation(err) {
 			err := uc.repository.GetShortIDsBatch(ctx, entities)
-			for _, v := range entities {
-				v.ShortURL = uc.shortURLFromID(v.ShortID)
-			}
 			if err == nil {
 				err = ErrUrlEntityAlreadyExists
+				for _, v := range entities {
+					v.ShortURL = uc.shortURLFromID(v.ShortID)
+				}
 			}
 			return err
 		}
