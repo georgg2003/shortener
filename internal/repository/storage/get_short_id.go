@@ -5,6 +5,6 @@ import (
 )
 
 func (r *repository) GetShortID(ctx context.Context, originalURL string) (string, error) {
-	r.logger.Panic("GetShortID is not implemented")
+	r.logger.Fatal("GetShortID is not implemented")
 	return "", nil
 }

@@ -30,9 +30,6 @@ func New(
 ) *repository {
 	var db *pgxpool.Pool
 
-	if cfg.DataBaseDSN == "" {
-		logger.Fatalf("database dsn is empty")
-	}
 	logger.Debugf("making new db connection pool with dsn: %v", cfg.DataBaseDSN)
 
 	poolConfig, err := pgxpool.ParseConfig(cfg.DataBaseDSN)
