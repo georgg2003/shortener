@@ -1,7 +1,10 @@
 package delivery
 
 import (
+	"errors"
 	"net/http"
+
+	"github.com/georgg2003/shortener/internal/repository"
 )
 
 func (d delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
@@ -16,7 +19,12 @@ func (d delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	longURL, err := d.usecase.ProcessShortURL(ctx, id)
 	if err != nil {
-		http.Error(w, "Link not found", http.StatusNotFound)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Link not found", http.StatusNotFound)
+			return
+		}
+		d.logger.WithContext(ctx).WithError(err).Error("failed to process short url")
+		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
 
