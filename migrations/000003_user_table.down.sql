@@ -1,1 +1,4 @@
+ALTER TABLE url_entity
+DROP COLUMN user_id;
+
 DROP TABLE IF EXISTS users;
