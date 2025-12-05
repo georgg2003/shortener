@@ -3,6 +3,7 @@ package delivery
 import (
 	"context"
 
+	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/pkg/middlewares"
 	"github.com/go-chi/chi/v5"
@@ -27,15 +28,18 @@ type UseCase interface {
 type delivery struct {
 	usecase UseCase
 	logger  *logrus.Logger
+	cfg     *config.Config
 }
 
 func New(
 	usecase UseCase,
 	logger *logrus.Logger,
+	cfg *config.Config,
 ) Delivery {
 	return &delivery{
 		usecase: usecase,
 		logger:  logger,
+		cfg:     cfg,
 	}
 }
 
@@ -44,9 +48,12 @@ func (d *delivery) GetNewRouter() chi.Router {
 
 	r.Use(
 		middlewares.NewAccessLogMiddleware(d.logger),
-		middlewares.NewSimpleAuthMiddleware(d.logger, d.usecase),
 		middlewares.NewGzipCompressionMiddleware(),
 	)
+
+	if d.cfg.DataBaseDSN != "" {
+		r.Use(middlewares.NewSimpleAuthMiddleware(d.logger, d.usecase))
+	}
 
 	r.Post("/api/shorten", d.APIShortenURL)
 	r.Post("/api/shorten/batch", d.APIShortenURLBatch)
