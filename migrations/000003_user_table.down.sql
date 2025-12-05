@@ -1,7 +1,7 @@
 ALTER TABLE url_entity
-DROP CONSTRAINT fk_url_entity_user;
+DROP CONSTRAINT IF EXISTS fk_url_entity_user;
 
 ALTER TABLE url_entity
-DROP COLUMN user_id;
+DROP COLUMN IF EXISTS user_id;
 
 DROP TABLE IF EXISTS users;
