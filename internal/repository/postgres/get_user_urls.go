@@ -24,7 +24,7 @@ func (r *repository) GetUserURLs(ctx context.Context, userID int64) ([]models.UR
 		return nil, utils.ErrWrap(err, "failed to get user urls")
 	}
 
-	arr := make([]models.URLEntity, 0, 0)
+	arr := make([]models.URLEntity, 0)
 	for rows.Next() {
 		var orig, shortID string
 		if err := rows.Scan(&orig, &shortID); err != nil {

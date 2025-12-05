@@ -25,7 +25,6 @@ func createNewUser(ctx context.Context, uc UseCase, w http.ResponseWriter) (int6
 	if err != nil {
 		return 0, err
 	}
-	userID, err = jwthelper.ReadAccessToken(token)
 	newCookie := &http.Cookie{
 		Name:  tokenCookieName,
 		Value: token,
@@ -37,10 +36,10 @@ func createNewUser(ctx context.Context, uc UseCase, w http.ResponseWriter) (int6
 func NewSimpleAuthMiddleware(l *logrus.Logger, uc UseCase) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
-			token, err := r.Cookie(tokenCookieName)
 			ctx := r.Context()
 			var userID int64
 
+			token, err := r.Cookie(tokenCookieName)
 			if errors.Is(err, http.ErrNoCookie) {
 				if userID, err = createNewUser(ctx, uc, w); err != nil {
 					l.WithContext(ctx).WithError(err).Error("failed to create new user in middleware")

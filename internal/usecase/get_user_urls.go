@@ -22,9 +22,13 @@ func (uc *useCase) GetUserURLs(ctx context.Context) ([]models.URLEntity, error) 
 		return nil, utils.ErrWrap(err, "failed to get user urls")
 	}
 
+	resp := make([]models.URLEntity, 0, len(urls))
 	for _, url := range urls {
-		url.ShortURL = uc.shortURLFromID(url.ShortID)
+		resp = append(resp, models.URLEntity{
+			ShortURL:    uc.shortURLFromID(url.ShortID),
+			OriginalURL: url.OriginalURL,
+		})
 	}
 
-	return urls, err
+	return resp, err
 }
