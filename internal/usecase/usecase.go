@@ -16,6 +16,7 @@ type Repository interface {
 	Ping(ctx context.Context) error
 	NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error
 	NewUser(ctx context.Context) (int64, error)
+	GetUserURLs(ctx context.Context, userID int64) ([]models.URLEntity, error)
 }
 
 type useCase struct {

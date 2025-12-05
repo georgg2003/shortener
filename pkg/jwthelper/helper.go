@@ -6,16 +6,16 @@ import (
 
 var secretKey = []byte("TOP_SECRET")
 
-type tokenClaims struct {
+type TokenClaims struct {
 	jwt.RegisteredClaims
-	userID int64
+	UserID int64
 }
 
 func NewAccessToken(userID int64) (string, error) {
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
-		tokenClaims{
-			userID: userID,
+		TokenClaims{
+			UserID: userID,
 		},
 	)
 	return token.SignedString(secretKey)
@@ -24,16 +24,16 @@ func NewAccessToken(userID int64) (string, error) {
 func ReadAccessToken(encodedToken string) (int64, error) {
 	parser := jwt.NewParser()
 
-	claims := tokenClaims{}
+	claims := TokenClaims{}
 	token, err := parser.ParseWithClaims(encodedToken, &claims, func(token *jwt.Token) (interface{}, error) {
-		if token.Method == jwt.SigningMethodHS256 {
+		if token.Method != jwt.SigningMethodHS256 {
 			return secretKey, jwt.NewValidationError(
 				"signing method is not correct",
 				jwt.ValidationErrorMalformed,
 			)
 		}
 
-		return token, nil
+		return secretKey, nil
 	})
 	if err != nil {
 		return 0, err
@@ -42,5 +42,5 @@ func ReadAccessToken(encodedToken string) (int64, error) {
 		return 0, jwt.ErrTokenNotValidYet
 	}
 
-	return claims.userID, nil
+	return claims.UserID, nil
 }
