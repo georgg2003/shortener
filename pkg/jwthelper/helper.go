@@ -4,7 +4,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-const secretKey = "TOP_SECRET"
+var secretKey = []byte("TOP_SECRET")
 
 type tokenClaims struct {
 	jwt.RegisteredClaims
@@ -18,7 +18,7 @@ func NewAccessToken(userID int64) (string, error) {
 			userID: userID,
 		},
 	)
-	return token.Method.Sign(token.Raw, secretKey)
+	return token.SignedString(secretKey)
 }
 
 func ReadAccessToken(encodedToken string) (int64, error) {
