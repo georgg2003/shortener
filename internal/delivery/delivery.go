@@ -20,6 +20,7 @@ type UseCase interface {
 	NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error
 	ProcessShortURL(ctx context.Context, id string) (string, error)
 	Ping(ctx context.Context) error
+	NewUser(ctx context.Context) (int64, error)
 }
 
 type delivery struct {
@@ -43,6 +44,7 @@ func (d *delivery) GetNewRouter() chi.Router {
 	r.Use(
 		middlewares.NewAccessLogMiddleware(d.logger),
 		middlewares.NewGzipCompressionMiddleware(),
+		middlewares.NewSimpleAuthMiddleware(d.logger, d.usecase),
 	)
 
 	r.Post("/api/shorten", d.APIShortenURL)
