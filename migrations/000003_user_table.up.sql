@@ -5,5 +5,5 @@ CREATE TABLE users (
 ALTER TABLE url_entity
 ADD COLUMN user_id BIGINT;
 
-ALTER TABLE url_entity
-ADD CONSTRAINT fk_url_entity_user FOREIGN KEY (user_id) REFERENCES users (id);
+-- ALTER TABLE url_entity
+-- ADD CONSTRAINT fk_url_entity_user FOREIGN KEY (user_id) REFERENCES users (id);
