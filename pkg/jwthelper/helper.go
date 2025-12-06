@@ -29,7 +29,7 @@ func ReadAccessToken(encodedToken string) (int64, error) {
 		if token.Method != jwt.SigningMethodHS256 {
 			return secretKey, jwt.NewValidationError(
 				"signing method is not correct",
-				jwt.ValidationErrorMalformed,
+				jwt.ValidationErrorUnverifiable,
 			)
 		}
 

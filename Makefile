@@ -49,7 +49,7 @@ clean:
 ## ---------------------------
 
 test:
-	$(GO) test $(PKG) -cover
+	$(GO) test $(PKG) -cover -v
 
 ## ---------------------------
 ## Generate mocks and stuff
