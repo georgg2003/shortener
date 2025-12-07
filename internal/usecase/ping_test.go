@@ -8,6 +8,7 @@ import (
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/georgg2003/shortener/internal/usecase/mock"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -27,7 +28,7 @@ func TestPing(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	repo := mock.NewMockRepository(ctrl)
 
-	uc := usecase.New(repo, conf)
+	uc := usecase.New(repo, conf, logrus.New())
 
 	testCases := []TestCase{
 		{
