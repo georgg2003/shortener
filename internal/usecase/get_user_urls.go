@@ -2,14 +2,11 @@ package usecase
 
 import (
 	"context"
-	"errors"
 
 	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/pkg/contextlib"
 	"github.com/georgg2003/shortener/pkg/utils"
 )
-
-var errUserNotFound = errors.New("user is not found")
 
 func (uc *useCase) GetUserURLs(ctx context.Context) ([]models.URLEntity, error) {
 	userID, ok := contextlib.GetUserID(ctx)

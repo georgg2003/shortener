@@ -10,16 +10,16 @@ import (
 
 var errWrongStorageType = errors.New("wrong type in storage")
 
-func (r *repository) GetLongURL(ctx context.Context, shortID string) (string, error) {
+func (r *repository) GetLongURL(ctx context.Context, shortID string) (string, bool, error) {
 	storageValue, ok := r.storage.Load(shortID)
 	if !ok {
-		return "", repo.ErrNotFound
+		return "", false, repo.ErrNotFound
 	}
 
 	shortURLModel, ok := storageValue.(models.ShortURL)
 	if !ok {
-		return "", errWrongStorageType
+		return "", false, errWrongStorageType
 	}
 
-	return shortURLModel.LongURL, nil
+	return shortURLModel.LongURL, false, nil
 }

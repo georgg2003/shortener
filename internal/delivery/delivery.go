@@ -19,10 +19,11 @@ type Delivery interface {
 type UseCase interface {
 	NewShortURL(ctx context.Context, url string) (string, error)
 	NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error
-	ProcessShortURL(ctx context.Context, id string) (string, error)
+	ProcessShortURL(ctx context.Context, id string) (string, bool, error)
 	Ping(ctx context.Context) error
 	NewUser(ctx context.Context) (int64, error)
 	GetUserURLs(ctx context.Context) ([]models.URLEntity, error)
+	DeleteUserURLs(ctx context.Context, urls []string) error
 }
 
 type delivery struct {
@@ -58,6 +59,7 @@ func (d *delivery) GetNewRouter() chi.Router {
 	r.Post("/api/shorten", d.APIShortenURL)
 	r.Post("/api/shorten/batch", d.APIShortenURLBatch)
 	r.Get("/api/user/urls", d.GetUserURLs)
+	r.Delete("/api/user/urls", d.DeleteUserURLs)
 
 	r.Post("/", d.ShortenURL)
 	r.Get("/{id}", d.ProcessShortURL)

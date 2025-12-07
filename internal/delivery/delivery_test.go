@@ -62,7 +62,7 @@ func TestDelivery(t *testing.T) {
 	defer cancel()
 
 	repo := storage.New(ctx, conf, logger)
-	usecase := usecase.New(repo, conf)
+	usecase := usecase.New(repo, conf, logger)
 	delivery := delivery.New(usecase, logger, conf)
 
 	r := delivery.GetNewRouter()

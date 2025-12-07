@@ -28,3 +28,5 @@ type APIUserURLsResponseRecord struct {
 }
 
 type APIUserURLsResponse = []APIUserURLsResponseRecord
+
+type APIDeleteUserURLsRequest = []string

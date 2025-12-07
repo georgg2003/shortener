@@ -3,9 +3,10 @@ package models
 import "github.com/google/uuid"
 
 type ShortURL struct {
-	UUID     uuid.UUID `json:"uuid"`
-	ShortURL string    `json:"short_url"`
-	LongURL  string    `json:"long_url"`
+	UUID      uuid.UUID `json:"uuid"`
+	ShortURL  string    `json:"short_url"`
+	LongURL   string    `json:"long_url"`
+	IsDeleted bool      `json:"is_deleted"`
 }
 
 type URLEntity struct {
@@ -13,4 +14,5 @@ type URLEntity struct {
 	ShortURL      string
 	OriginalURL   string
 	ShortID       string
+	IsDeleted     bool
 }
