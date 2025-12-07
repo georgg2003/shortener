@@ -51,6 +51,10 @@ clean:
 test:
 	$(GO) test $(PKG) -cover -v
 
+coverage: 
+	$(GO) test $(PKG) -covermode=count -coverpkg=$(PKG) -coverprofile=coverage.out
+	$(GO) tool cover -func=coverage.out
+
 ## ---------------------------
 ## Generate mocks and stuff
 ## ---------------------------
