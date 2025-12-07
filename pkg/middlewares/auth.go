@@ -46,7 +46,6 @@ func NewSimpleAuthMiddleware(l *logrus.Logger, uc UseCase) func(h http.Handler) 
 					http.Error(w, "failed to create a new user", http.StatusInternalServerError)
 					return
 				}
-				l.Info(userID)
 			} else {
 				userID, err = jwthelper.ReadAccessToken(token.Value)
 				if err != nil {
