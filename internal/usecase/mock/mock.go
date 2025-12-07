@@ -41,13 +41,28 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// DeleteUserURLs mocks base method.
+func (m *MockRepository) DeleteUserURLs(ctx context.Context, tasks []models.DeleteUserURLsTask) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUserURLs", ctx, tasks)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUserURLs indicates an expected call of DeleteUserURLs.
+func (mr *MockRepositoryMockRecorder) DeleteUserURLs(ctx, tasks any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserURLs", reflect.TypeOf((*MockRepository)(nil).DeleteUserURLs), ctx, tasks)
+}
+
 // GetLongURL mocks base method.
-func (m *MockRepository) GetLongURL(ctx context.Context, shortID string) (string, error) {
+func (m *MockRepository) GetLongURL(ctx context.Context, shortID string) (string, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLongURL", ctx, shortID)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetLongURL indicates an expected call of GetLongURL.
