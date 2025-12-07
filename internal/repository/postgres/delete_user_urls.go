@@ -22,7 +22,7 @@ func (r *repository) DeleteUserURLs(ctx context.Context, tasks []models.DeleteUs
 	}
 
 	for _, task := range tasks {
-		tx.Exec(ctx, `
+		_, err := tx.Exec(ctx, `
 			UPDATE url_entity
 			SET is_deleted = true
 			WHERE short_id = ANY($1) AND user_id = $2

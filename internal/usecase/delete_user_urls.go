@@ -32,17 +32,19 @@ func (uc *useCase) deleteUserURLsWorker() {
 		select {
 		case task := <-uc.deleteUserURLsCh:
 			tasks = append(tasks, task)
+			uc.logger.
+				WithFields(logrus.Fields{"tasks_queue": len(tasks)}).
+				Info("added a new task to queue")
 		case <-ticker.C:
+			logger := uc.logger.WithFields(logrus.Fields{"tasks_queue": len(tasks)})
+			logger.Info("started delete user urls operation")
 			if len(tasks) == 0 {
 				continue
 			}
 
 			err := uc.repository.DeleteUserURLs(context.TODO(), tasks)
 			if err != nil {
-				uc.logger.
-					WithFields(logrus.Fields{"tasks_queue": len(tasks)}).
-					WithError(err).
-					Error("failed to delete user urls")
+				logger.WithError(err).Error("failed to delete user urls")
 				continue
 			}
 
