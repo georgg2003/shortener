@@ -25,10 +25,9 @@ func (uc *useCase) DeleteUserURLs(ctx context.Context, shortIDs []string) error 
 
 func (uc *useCase) deleteUserURLsWorker() {
 	ticker := time.NewTicker(10 * time.Second)
+	var tasks []models.DeleteUserURLsTask
 
 	for {
-		var tasks []models.DeleteUserURLsTask
-
 		select {
 		case task := <-uc.deleteUserURLsCh:
 			tasks = append(tasks, task)
@@ -47,6 +46,7 @@ func (uc *useCase) deleteUserURLsWorker() {
 				logger.WithError(err).Error("failed to delete user urls")
 				continue
 			}
+			logger.Info("successfully deleted user urls")
 
 			tasks = nil
 		}
