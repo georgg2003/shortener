@@ -15,6 +15,8 @@ type Repository interface {
 	GetShortIDsBatch(ctx context.Context, entities []*models.URLEntity) (map[string]string, error)
 	Ping(ctx context.Context) error
 	NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error
+	NewUser(ctx context.Context) (int64, error)
+	GetUserURLs(ctx context.Context, userID int64) ([]models.URLEntity, error)
 }
 
 type useCase struct {

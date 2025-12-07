@@ -7,7 +7,7 @@ import (
 	"github.com/georgg2003/shortener/internal/repository"
 )
 
-func (d delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
+func (d *delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	ctx := r.Context()
 

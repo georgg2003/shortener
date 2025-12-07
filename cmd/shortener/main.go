@@ -33,7 +33,7 @@ func main() {
 	}
 
 	usecase := usecase.New(repo, conf)
-	delivery := delivery.New(usecase, logger)
+	delivery := delivery.New(usecase, logger, conf)
 
 	r := delivery.GetNewRouter()
 

@@ -3,6 +3,7 @@ package delivery
 import (
 	"context"
 
+	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/pkg/middlewares"
 	"github.com/go-chi/chi/v5"
@@ -20,20 +21,25 @@ type UseCase interface {
 	NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error
 	ProcessShortURL(ctx context.Context, id string) (string, error)
 	Ping(ctx context.Context) error
+	NewUser(ctx context.Context) (int64, error)
+	GetUserURLs(ctx context.Context) ([]models.URLEntity, error)
 }
 
 type delivery struct {
 	usecase UseCase
 	logger  *logrus.Logger
+	cfg     *config.Config
 }
 
 func New(
 	usecase UseCase,
 	logger *logrus.Logger,
+	cfg *config.Config,
 ) Delivery {
 	return &delivery{
 		usecase: usecase,
 		logger:  logger,
+		cfg:     cfg,
 	}
 }
 
@@ -45,8 +51,13 @@ func (d *delivery) GetNewRouter() chi.Router {
 		middlewares.NewGzipCompressionMiddleware(),
 	)
 
+	if d.cfg.DataBaseDSN != "" {
+		r.Use(middlewares.NewSimpleAuthMiddleware(d.logger, d.usecase))
+	}
+
 	r.Post("/api/shorten", d.APIShortenURL)
 	r.Post("/api/shorten/batch", d.APIShortenURLBatch)
+	r.Get("/api/user/urls", d.GetUserURLs)
 
 	r.Post("/", d.ShortenURL)
 	r.Get("/{id}", d.ProcessShortURL)
