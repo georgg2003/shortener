@@ -75,6 +75,7 @@ func TestGetUserUrls(t *testing.T) {
 		OriginalURL: testURL,
 		ShortID:     "adxzdsadsa",
 	}}, nil)
+
 	req, err := client.R().Get(ts.URL + "/api/user/urls")
 	require.NoError(t, err, errHTTPReqText)
 
