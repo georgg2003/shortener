@@ -13,20 +13,20 @@ type APIShortenURLBatchRequestRecord struct {
 	OriginalURL   string `json:"original_url"`
 }
 
-type APIShortenURLBatchRequest = []APIShortenURLBatchRequestRecord
+type APIShortenURLBatchRequest []APIShortenURLBatchRequestRecord
 
 type APIShortenURLBatchResponseRecord struct {
 	CorrelationID string `json:"correlation_id"`
 	ShortURL      string `json:"short_url"`
 }
 
-type APIShortenURLBatchResponse = []APIShortenURLBatchResponseRecord
+type APIShortenURLBatchResponse []APIShortenURLBatchResponseRecord
 
 type APIUserURLsResponseRecord struct {
 	OriginalURL string `json:"original_url"`
 	ShortURL    string `json:"short_url"`
 }
 
-type APIUserURLsResponse = []APIUserURLsResponseRecord
+type APIUserURLsResponse []APIUserURLsResponseRecord
 
-type APIDeleteUserURLsRequest = []string
+type APIDeleteUserURLsRequest []string

@@ -41,7 +41,7 @@ func (uc *useCase) deleteUserURLsWorker() {
 				continue
 			}
 
-			err := uc.repository.DeleteUserURLs(context.TODO(), tasks)
+			err := uc.repository.DeleteUserURLs(context.Background(), tasks)
 			if err != nil {
 				logger.WithError(err).Error("failed to delete user urls")
 				continue
