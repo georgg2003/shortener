@@ -15,6 +15,7 @@ type Config struct {
 	FileStoragePath string `mapstructure:"file_storage_path" env:"FILE_STORAGE_PATH"`
 	DataBaseDSN     string `mapstructure:"database_dsn" env:"DATABASE_DSN"`
 	PostgresEnabled bool   `mapstructure:"postgres_enabled" env:"POSTGRES_ENABLED"`
+	JWTSecretKey    string `mapstructure:"jwt_secret_key" env:"JWT_SECRET_KEY"`
 }
 
 func New() *Config {
@@ -23,6 +24,7 @@ func New() *Config {
 		BaseURL:         "http://localhost:8080",
 		FileStoragePath: "./data.json",
 		DataBaseDSN:     "",
+		JWTSecretKey:    "secret_key",
 	}
 }
 
@@ -58,6 +60,7 @@ func (c *Config) ReadFromFlags() {
 	baseURL := flag.String("b", "", "base url")
 	fileStoragePath := flag.String("f", "", "file storage path")
 	dataBaseDSN := flag.String("d", "", "database dsn")
+	jwtSecretKey := flag.String("k", "", "jwt secret key")
 	flag.Parse()
 
 	if listenAddr != nil && *listenAddr != "" {
@@ -71,6 +74,9 @@ func (c *Config) ReadFromFlags() {
 	}
 	if dataBaseDSN != nil && *dataBaseDSN != "" {
 		c.DataBaseDSN = *dataBaseDSN
+	}
+	if jwtSecretKey != nil && *jwtSecretKey != "" {
+		c.JWTSecretKey = *jwtSecretKey
 	}
 }
 

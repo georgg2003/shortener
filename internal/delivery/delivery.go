@@ -53,7 +53,7 @@ func (d *delivery) GetNewRouter() chi.Router {
 	)
 
 	if d.cfg.DataBaseDSN != "" {
-		r.Use(middlewares.NewSimpleAuthMiddleware(d.logger, d.usecase))
+		r.Use(middlewares.NewSimpleAuthMiddleware(d.cfg, d.logger, d.usecase))
 	}
 
 	r.Post("/api/shorten", d.APIShortenURL)

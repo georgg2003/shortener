@@ -8,12 +8,14 @@ import (
 )
 
 var testUserID int64 = 1
+var key = []byte("secret_token")
 
 func TestNewAccessToken(t *testing.T) {
-	token, err := NewAccessToken(testUserID)
+	helper := New(key)
+	token, err := helper.NewAccessToken(testUserID)
 	assert.NoError(t, err)
 
-	gotUserID, err := ReadAccessToken(token)
+	gotUserID, err := helper.ReadAccessToken(token)
 	assert.NoError(t, err)
 	assert.Equal(t, testUserID, gotUserID)
 }
@@ -25,10 +27,11 @@ func TestInvalidSigningMethod(t *testing.T) {
 			UserID: testUserID,
 		},
 	)
-	encodedToken, err := token.SignedString(secretKey)
+	encodedToken, err := token.SignedString(key)
 	assert.NoError(t, err)
 
-	_, err = ReadAccessToken(encodedToken)
+	helper := New(key)
+	_, err = helper.ReadAccessToken(encodedToken)
 
 	var tgt *jwt.ValidationError
 	assert.ErrorAs(t, err, &tgt)

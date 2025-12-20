@@ -4,36 +4,38 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var secretKey = []byte("TOP_SECRET")
-
 type TokenClaims struct {
 	jwt.RegisteredClaims
 	UserID int64
 }
 
-func NewAccessToken(userID int64) (string, error) {
+type JWTHelper struct {
+	key []byte
+}
+
+func (h *JWTHelper) NewAccessToken(userID int64) (string, error) {
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		TokenClaims{
 			UserID: userID,
 		},
 	)
-	return token.SignedString(secretKey)
+	return token.SignedString(h.key)
 }
 
-func ReadAccessToken(encodedToken string) (int64, error) {
+func (h *JWTHelper) ReadAccessToken(encodedToken string) (int64, error) {
 	parser := jwt.NewParser()
 
 	claims := TokenClaims{}
 	token, err := parser.ParseWithClaims(encodedToken, &claims, func(token *jwt.Token) (interface{}, error) {
 		if token.Method != jwt.SigningMethodHS256 {
-			return secretKey, jwt.NewValidationError(
+			return h.key, jwt.NewValidationError(
 				"signing method is not correct",
 				jwt.ValidationErrorUnverifiable,
 			)
 		}
 
-		return secretKey, nil
+		return h.key, nil
 	})
 	if err != nil {
 		return 0, err
@@ -43,4 +45,10 @@ func ReadAccessToken(encodedToken string) (int64, error) {
 	}
 
 	return claims.UserID, nil
+}
+
+func New(key []byte) *JWTHelper {
+	return &JWTHelper{
+		key: key,
+	}
 }
