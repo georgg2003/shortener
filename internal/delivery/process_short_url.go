@@ -7,7 +7,7 @@ import (
 	"github.com/georgg2003/shortener/internal/repository"
 )
 
-func (d delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
+func (d *delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	ctx := r.Context()
 
@@ -17,7 +17,7 @@ func (d delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := r.PathValue("id")
-	longURL, err := d.usecase.ProcessShortURL(ctx, id)
+	longURL, isDeleted, err := d.usecase.ProcessShortURL(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			http.Error(w, "Link not found", http.StatusNotFound)
@@ -25,6 +25,11 @@ func (d delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
 		}
 		d.logger.WithContext(ctx).WithError(err).Error("failed to process short url")
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		return
+	}
+
+	if isDeleted {
+		http.Error(w, "URL was deleted", http.StatusGone)
 		return
 	}
 

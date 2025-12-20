@@ -32,8 +32,8 @@ func main() {
 		repo = storage.New(ctx, conf, logger)
 	}
 
-	usecase := usecase.New(repo, conf)
-	delivery := delivery.New(usecase, logger)
+	usecase := usecase.New(repo, conf, logger)
+	delivery := delivery.New(usecase, logger, conf)
 
 	r := delivery.GetNewRouter()
 

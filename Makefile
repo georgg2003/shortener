@@ -49,7 +49,13 @@ clean:
 ## ---------------------------
 
 test:
-	$(GO) test $(PKG) -cover
+	$(GO) test $(PKG) -cover -v
+
+coverage: 
+	$(GO) test $(PKG) -covermode=count -coverpkg=$(PKG) -coverprofile=coverage.out
+	grep -vE "(mock\.go|/mock/)" coverage.out > coverage.filtered.out
+	mv coverage.filtered.out coverage.out
+	$(GO) tool cover -func=coverage.out
 
 ## ---------------------------
 ## Generate mocks and stuff

@@ -41,13 +41,28 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// DeleteUserURLs mocks base method.
+func (m *MockRepository) DeleteUserURLs(ctx context.Context, tasks []models.DeleteUserURLsTask) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUserURLs", ctx, tasks)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUserURLs indicates an expected call of DeleteUserURLs.
+func (mr *MockRepositoryMockRecorder) DeleteUserURLs(ctx, tasks any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserURLs", reflect.TypeOf((*MockRepository)(nil).DeleteUserURLs), ctx, tasks)
+}
+
 // GetLongURL mocks base method.
-func (m *MockRepository) GetLongURL(ctx context.Context, shortID string) (string, error) {
+func (m *MockRepository) GetLongURL(ctx context.Context, shortID string) (string, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLongURL", ctx, shortID)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetLongURL indicates an expected call of GetLongURL.
@@ -86,6 +101,21 @@ func (mr *MockRepositoryMockRecorder) GetShortIDsBatch(ctx, entities any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetShortIDsBatch", reflect.TypeOf((*MockRepository)(nil).GetShortIDsBatch), ctx, entities)
 }
 
+// GetUserURLs mocks base method.
+func (m *MockRepository) GetUserURLs(ctx context.Context, userID int64) ([]models.URLEntity, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserURLs", ctx, userID)
+	ret0, _ := ret[0].([]models.URLEntity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserURLs indicates an expected call of GetUserURLs.
+func (mr *MockRepositoryMockRecorder) GetUserURLs(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserURLs", reflect.TypeOf((*MockRepository)(nil).GetUserURLs), ctx, userID)
+}
+
 // NewShortURL mocks base method.
 func (m *MockRepository) NewShortURL(ctx context.Context, url, shortID string) error {
 	m.ctrl.T.Helper()
@@ -112,6 +142,21 @@ func (m *MockRepository) NewShortURLBatch(ctx context.Context, entities []*model
 func (mr *MockRepositoryMockRecorder) NewShortURLBatch(ctx, entities any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewShortURLBatch", reflect.TypeOf((*MockRepository)(nil).NewShortURLBatch), ctx, entities)
+}
+
+// NewUser mocks base method.
+func (m *MockRepository) NewUser(ctx context.Context) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewUser", ctx)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NewUser indicates an expected call of NewUser.
+func (mr *MockRepositoryMockRecorder) NewUser(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewUser", reflect.TypeOf((*MockRepository)(nil).NewUser), ctx)
 }
 
 // Ping mocks base method.

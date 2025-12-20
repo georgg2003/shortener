@@ -7,7 +7,7 @@ import (
 	repo "github.com/georgg2003/shortener/internal/repository"
 )
 
-func (r *repository) GetShortIDsBatch(ctx context.Context, entities []*models.URLEntity) (map[string]string, error) {
+func (r *repository) DeleteUserURLs(ctx context.Context, tasks []models.DeleteUserURLsTask) error {
 	r.logger.Fatal("GetShortIDsBatch batch is not implemented")
-	return nil, repo.ErrNotImplemented
+	return repo.ErrNotImplemented
 }

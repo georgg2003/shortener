@@ -1,0 +1,31 @@
+package usecase
+
+import (
+	"context"
+
+	"github.com/georgg2003/shortener/internal/models"
+	"github.com/georgg2003/shortener/pkg/contextlib"
+	"github.com/georgg2003/shortener/pkg/utils"
+)
+
+func (uc *useCase) GetUserURLs(ctx context.Context) ([]models.URLEntity, error) {
+	userID, ok := contextlib.GetUserID(ctx)
+	if !ok {
+		return nil, errUserNotFound
+	}
+
+	urls, err := uc.repository.GetUserURLs(ctx, userID)
+	if err != nil {
+		return nil, utils.ErrWrap(err, "failed to get user urls")
+	}
+
+	resp := make([]models.URLEntity, 0, len(urls))
+	for _, url := range urls {
+		resp = append(resp, models.URLEntity{
+			ShortURL:    uc.shortURLFromID(url.ShortID),
+			OriginalURL: url.OriginalURL,
+		})
+	}
+
+	return resp, err
+}

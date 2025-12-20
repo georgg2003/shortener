@@ -9,26 +9,27 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func (r *repository) GetLongURL(ctx context.Context, shortID string) (string, error) {
+func (r *repository) GetLongURL(ctx context.Context, shortID string) (string, bool, error) {
 	conn, err := r.db.Acquire(ctx)
 	if err != nil {
 		err = utils.ErrWrap(err, errFailedToAcquireConnection.Error())
-		return "", err
+		return "", false, err
 	}
 	defer conn.Release()
 
-	row := conn.QueryRow(ctx, "SELECT original_url FROM url_entity WHERE short_id = $1", shortID)
+	row := conn.QueryRow(ctx, "SELECT original_url, is_deleted FROM url_entity WHERE short_id = $1", shortID)
 
 	var longURL string
-	err = row.Scan(&longURL)
+	var isDeleted bool
+	err = row.Scan(&longURL, &isDeleted)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			err = repo.ErrNotFound
 		} else {
 			err = utils.ErrWrap(err, errFailedToScan.Error())
 		}
-		return "", err
+		return "", false, err
 	}
 
-	return longURL, nil
+	return longURL, isDeleted, nil
 }
