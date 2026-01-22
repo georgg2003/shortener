@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/delivery"
@@ -14,13 +16,20 @@ import (
 )
 
 func main() {
-	conf := config.New()
-	conf.ReadFromEnv()
-	conf.ReadFromFlags()
-
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{})
 	logger.SetLevel(logrus.DebugLevel)
+
+	conf := config.New()
+	if err := conf.ReadFromEnv(); err != nil {
+		logger.WithError(err).Fatal("failed to read config from env")
+	}
+
+	fs := flag.NewFlagSet("app_config", flag.ExitOnError)
+	if err := conf.ReadFromFlags(fs); err != nil {
+		logger.WithError(err).Fatal("failed to read config from flags")
+	}
+	fs.Parse(os.Args[1:])
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
