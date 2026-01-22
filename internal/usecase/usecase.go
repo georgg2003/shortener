@@ -29,6 +29,7 @@ type useCase struct {
 	config           *config.Config
 	deleteUserURLsCh chan models.DeleteUserURLsTask
 	logger           *logrus.Logger
+	observersByID    ObserversByID
 }
 
 func New(repo Repository, conf *config.Config, logger *logrus.Logger) *useCase {

@@ -25,7 +25,7 @@ func main() {
 		logger.WithError(err).Fatal("failed to read config from env")
 	}
 
-	fs := flag.NewFlagSet("app_config", flag.ExitOnError)
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	if err := conf.ReadFromFlags(fs); err != nil {
 		logger.WithError(err).Fatal("failed to read config from flags")
 	}
