@@ -29,7 +29,7 @@ func (obs *AuditObserver) OnNewURL(ev usecase.ObserverEvent) {
 		return
 	}
 	for repo := range slices.Values(obs.repositories) {
-		repo.WriteLog(convertEventToLog(ev, NewURLAction))
+		go repo.WriteLog(convertEventToLog(ev, NewURLAction))
 	}
 }
 
@@ -38,7 +38,7 @@ func (obs *AuditObserver) OnGetURL(ev usecase.ObserverEvent) {
 		return
 	}
 	for repo := range slices.Values(obs.repositories) {
-		repo.WriteLog(convertEventToLog(ev, FollowURLAction))
+		go repo.WriteLog(convertEventToLog(ev, FollowURLAction))
 	}
 }
 

@@ -20,7 +20,7 @@ func (repo *auditServiceRepository) WriteLog(log audit.AuditLog) error {
 		"addr": repo.addr,
 	}).Info("writing audit log into service")
 
-	_, err := repo.client.R().SetBody(log).Send()
+	_, err := repo.client.R().SetBody(log).Post("")
 	return err
 }
 

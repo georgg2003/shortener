@@ -41,7 +41,7 @@ func (uc *useCase) NewShortURL(ctx context.Context, url string) (string, error) 
 		}
 	}
 	shortURL := uc.shortURLFromID(shortID)
-	if uc.observersByID != nil && err != nil {
+	if uc.observersByID != nil && err == nil {
 		for observer := range maps.Values(uc.observersByID) {
 			observer.OnNewURL(ObserverEvent{
 				Time:        time.Now(),
