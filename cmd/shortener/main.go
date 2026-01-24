@@ -11,10 +11,10 @@ import (
 
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/delivery"
-	"github.com/georgg2003/shortener/internal/repository/audit_repo"
-	"github.com/georgg2003/shortener/internal/repository/audit_repo/audit_file"
-	"github.com/georgg2003/shortener/internal/repository/audit_repo/audit_service"
-	audit_stub "github.com/georgg2003/shortener/internal/repository/audit_repo/stub"
+	audit_repo "github.com/georgg2003/shortener/internal/repository/audit"
+	audit_service "github.com/georgg2003/shortener/internal/repository/audit/service"
+	audit_storage "github.com/georgg2003/shortener/internal/repository/audit/storage"
+	audit_stub "github.com/georgg2003/shortener/internal/repository/audit/stub"
 	"github.com/georgg2003/shortener/internal/repository/db"
 	"github.com/georgg2003/shortener/internal/repository/db/postgres"
 	"github.com/georgg2003/shortener/internal/repository/db/storage"
@@ -27,7 +27,7 @@ import (
 func newAuditRepos(cfg *config.Config, logger *logrus.Entry) []audit_repo.AuditRepository {
 	repos := make([]audit_repo.AuditRepository, 0)
 	if cfg.AuditFile != "" {
-		repos = append(repos, audit_file.New(logger, cfg.AuditFile))
+		repos = append(repos, audit_storage.New(logger, cfg.AuditFile))
 	}
 	if cfg.AuditURL != "" {
 		repos = append(repos, audit_service.New(logger, cfg.AuditURL))

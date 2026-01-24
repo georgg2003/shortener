@@ -1,11 +1,11 @@
-package audit_file
+package storage
 
 import (
 	"encoding/json"
 	"os"
 	"sync"
 
-	"github.com/georgg2003/shortener/internal/repository/audit_repo"
+	"github.com/georgg2003/shortener/internal/repository/audit"
 	"github.com/georgg2003/shortener/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -16,7 +16,7 @@ type auditFileRepository struct {
 	mu       sync.RWMutex
 }
 
-func (repo *auditFileRepository) WriteLog(log audit_repo.AuditLog) error {
+func (repo *auditFileRepository) WriteLog(log audit.AuditLog) error {
 	data, err := json.Marshal(log)
 	if err != nil {
 		repo.logger.Error()
@@ -32,7 +32,7 @@ func (repo *auditFileRepository) WriteLog(log audit_repo.AuditLog) error {
 	return os.WriteFile(repo.filename, data, os.ModeAppend)
 }
 
-func New(logger *logrus.Entry, filename string) audit_repo.AuditRepository {
+func New(logger *logrus.Entry, filename string) audit.AuditRepository {
 	return &auditFileRepository{
 		logger:   logger,
 		filename: filename,

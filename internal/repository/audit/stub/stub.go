@@ -3,7 +3,7 @@ package audit_stub
 import (
 	"encoding/json"
 
-	"github.com/georgg2003/shortener/internal/repository/audit_repo"
+	"github.com/georgg2003/shortener/internal/repository/audit"
 	"github.com/georgg2003/shortener/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -12,7 +12,7 @@ type auditStub struct {
 	logger *logrus.Entry
 }
 
-func (s *auditStub) WriteLog(log audit_repo.AuditLog) error {
+func (s *auditStub) WriteLog(log audit.AuditLog) error {
 	_, err := json.Marshal(log)
 	if err != nil {
 		s.logger.Error()

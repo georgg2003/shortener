@@ -1,4 +1,4 @@
-package audit_repo
+package audit
 
 type AuditLog struct {
 	Timestamp int `json:"ts"`

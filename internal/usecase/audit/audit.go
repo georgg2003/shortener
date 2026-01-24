@@ -4,7 +4,7 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/georgg2003/shortener/internal/repository/audit_repo"
+	audit_repo "github.com/georgg2003/shortener/internal/repository/audit"
 	"github.com/georgg2003/shortener/internal/usecase"
 )
 

@@ -1,9 +1,9 @@
-package audit_service
+package service
 
 import (
 	"time"
 
-	"github.com/georgg2003/shortener/internal/repository/audit_repo"
+	"github.com/georgg2003/shortener/internal/repository/audit"
 	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
 )
@@ -14,7 +14,7 @@ type auditServiceRepository struct {
 	client *resty.Client
 }
 
-func (repo *auditServiceRepository) WriteLog(log audit_repo.AuditLog) error {
+func (repo *auditServiceRepository) WriteLog(log audit.AuditLog) error {
 	repo.logger.WithFields(logrus.Fields{
 		"log":  log,
 		"addr": repo.addr,
@@ -24,7 +24,7 @@ func (repo *auditServiceRepository) WriteLog(log audit_repo.AuditLog) error {
 	return err
 }
 
-func New(logger *logrus.Entry, addr string) audit_repo.AuditRepository {
+func New(logger *logrus.Entry, addr string) audit.AuditRepository {
 	return &auditServiceRepository{
 		logger: logger,
 		addr:   addr,
