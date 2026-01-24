@@ -2,6 +2,7 @@ package storage
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"sync"
 
@@ -20,7 +21,7 @@ func (repo *auditFileRepository) WriteLog(log audit.AuditLog) error {
 	data, err := json.Marshal(log)
 	if err != nil {
 		repo.logger.Error()
-		return utils.ErrWrap(err, "failed to marshall audit log")
+		return utils.ErrWrap(err, "failed to marshall an audit log")
 	}
 	repo.logger.WithFields(logrus.Fields{
 		"log":      log,
@@ -29,7 +30,18 @@ func (repo *auditFileRepository) WriteLog(log audit.AuditLog) error {
 
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
-	return os.WriteFile(repo.filename, data, os.ModeAppend)
+
+	f, err := os.OpenFile(repo.filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return utils.ErrWrap(err, "failed to open an audit file")
+	}
+	defer f.Close()
+
+	if _, err := f.WriteString(fmt.Sprintf("%s\n", data)); err != nil {
+		return utils.ErrWrap(err, "failed to write an audit log")
+	}
+
+	return nil
 }
 
 func New(logger *logrus.Entry, filename string) audit.AuditRepository {

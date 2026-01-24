@@ -17,7 +17,7 @@ type AuditObserver struct {
 
 func convertEventToLog(ev usecase.ObserverEvent, action string) audit_repo.AuditLog {
 	return audit_repo.AuditLog{
-		Timestamp: ev.Time.Second(),
+		Timestamp: ev.Time.Unix(),
 		Action:    action,
 		UserID:    strconv.FormatInt(ev.UserID, 10),
 		URL:       ev.OriginalURL,

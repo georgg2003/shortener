@@ -28,7 +28,9 @@ func New(logger *logrus.Entry, addr string) audit.AuditRepository {
 	return &auditServiceRepository{
 		logger: logger,
 		addr:   addr,
-		client: resty.New().SetBaseURL(addr).
+		client: resty.New().
+			SetLogger(logger).
+			SetBaseURL(addr).
 			SetRetryCount(5).
 			SetRetryWaitTime(time.Second),
 	}
