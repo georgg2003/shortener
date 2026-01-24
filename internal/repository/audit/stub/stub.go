@@ -1,4 +1,4 @@
-package audit_stub
+package stub
 
 import (
 	"github.com/georgg2003/shortener/internal/repository/audit"
