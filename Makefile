@@ -39,7 +39,7 @@ build:
 	$(GO) build -o bin/$(BINARY) $(PKG)
 
 run:
-	$(GO) run $(PKG) -d $(DB_URL)
+	AUDIT_STUB_ENABLED=1 $(GO) run $(PKG) -d $(DB_URL)
 
 clean:
 	rm -rf bin

@@ -12,7 +12,9 @@ import (
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/delivery"
 	"github.com/georgg2003/shortener/internal/repository/audit_repo"
-	audit_stup "github.com/georgg2003/shortener/internal/repository/audit_repo/stub"
+	"github.com/georgg2003/shortener/internal/repository/audit_repo/audit_file"
+	"github.com/georgg2003/shortener/internal/repository/audit_repo/audit_service"
+	audit_stub "github.com/georgg2003/shortener/internal/repository/audit_repo/stub"
 	"github.com/georgg2003/shortener/internal/repository/db"
 	"github.com/georgg2003/shortener/internal/repository/db/postgres"
 	"github.com/georgg2003/shortener/internal/repository/db/storage"
@@ -22,8 +24,18 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func newAuditRepo(cfg *config.Config, logger *logrus.Entry) audit_repo.AuditRepository {
-	return audit_stup.New(logger)
+func newAuditRepos(cfg *config.Config, logger *logrus.Entry) []audit_repo.AuditRepository {
+	repos := make([]audit_repo.AuditRepository, 0)
+	if cfg.AuditFile != "" {
+		repos = append(repos, audit_file.New(logger, cfg.AuditFile))
+	}
+	if cfg.AuditURL != "" {
+		repos = append(repos, audit_service.New(logger, cfg.AuditURL))
+	}
+	if cfg.AuditStubEnabled {
+		repos = append(repos, audit_stub.New(logger))
+	}
+	return repos
 }
 
 func newRepo(ctx context.Context, conf *config.Config, logger *logrus.Logger) db.Repository {
@@ -57,8 +69,8 @@ func main() {
 	usecase := usecase.New(repo, conf, logger)
 
 	auditLogger := logger.WithField("subsystem", "audit")
-	auditRepo := newAuditRepo(conf, auditLogger)
-	observer := audit.NewAuditObserver(auditRepo)
+	auditRepos := newAuditRepos(conf, auditLogger)
+	observer := audit.NewAuditObserver(auditRepos)
 	defer usecase.Observe("audit", observer)()
 
 	delivery := delivery.New(usecase, logger, conf)

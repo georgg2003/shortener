@@ -1,4 +1,4 @@
-package audit_stup
+package audit_stub
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ func (s *auditStub) WriteLog(log audit_repo.AuditLog) error {
 	_, err := json.Marshal(log)
 	if err != nil {
 		s.logger.Error()
-		return utils.ErrWrap(err, "failed to write audit log")
+		return utils.ErrWrap(err, "failed to marshall audit log")
 	}
 	s.logger.WithField("log", log).Info("audit WriteLog called")
 	return nil

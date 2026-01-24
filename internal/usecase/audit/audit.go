@@ -1,6 +1,7 @@
 package audit
 
 import (
+	"slices"
 	"strconv"
 
 	"github.com/georgg2003/shortener/internal/repository/audit_repo"
@@ -11,7 +12,7 @@ const NewURLAction = "shorten"
 const FollowURLAction = "follow"
 
 type AuditObserver struct {
-	repository audit_repo.AuditRepository
+	repositories []audit_repo.AuditRepository
 }
 
 func convertEventToLog(ev usecase.ObserverEvent, action string) audit_repo.AuditLog {
@@ -24,15 +25,25 @@ func convertEventToLog(ev usecase.ObserverEvent, action string) audit_repo.Audit
 }
 
 func (obs *AuditObserver) OnNewURL(ev usecase.ObserverEvent) {
-	obs.repository.WriteLog(convertEventToLog(ev, NewURLAction))
+	if obs.repositories == nil {
+		return
+	}
+	for repo := range slices.Values(obs.repositories) {
+		repo.WriteLog(convertEventToLog(ev, NewURLAction))
+	}
 }
 
 func (obs *AuditObserver) OnGetURL(ev usecase.ObserverEvent) {
-	obs.repository.WriteLog(convertEventToLog(ev, FollowURLAction))
+	if obs.repositories == nil {
+		return
+	}
+	for repo := range slices.Values(obs.repositories) {
+		repo.WriteLog(convertEventToLog(ev, FollowURLAction))
+	}
 }
 
-func NewAuditObserver(repo audit_repo.AuditRepository) usecase.Observer {
+func NewAuditObserver(repos []audit_repo.AuditRepository) usecase.Observer {
 	return &AuditObserver{
-		repository: repo,
+		repositories: repos,
 	}
 }
