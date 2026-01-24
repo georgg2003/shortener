@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/georgg2003/shortener/internal/repository"
+	"github.com/georgg2003/shortener/internal/repository/db"
 )
 
 func (d *delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +19,7 @@ func (d *delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	longURL, isDeleted, err := d.usecase.ProcessShortURL(ctx, id)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, db.ErrNotFound) {
 			http.Error(w, "Link not found", http.StatusNotFound)
 			return
 		}

@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/georgg2003/shortener/internal/config"
+	"github.com/georgg2003/shortener/internal/repository/db/mock"
 	"github.com/georgg2003/shortener/internal/usecase"
-	"github.com/georgg2003/shortener/internal/usecase/mock"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"

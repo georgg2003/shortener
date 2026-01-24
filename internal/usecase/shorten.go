@@ -32,7 +32,7 @@ func (uc *useCase) NewShortURL(ctx context.Context, url string) (string, error) 
 		if postgres.IsUniqueViolation(err) {
 			shortID, err = uc.repository.GetShortID(ctx, url)
 			if err != nil {
-				utils.ErrWrap(err, errFailedToGetShortIDsBatch.Error())
+				utils.ErrWrap(err, errFailedToGetShortID.Error())
 				return "", err
 			}
 			err = ErrURLEntityAlreadyExists
@@ -41,13 +41,14 @@ func (uc *useCase) NewShortURL(ctx context.Context, url string) (string, error) 
 		}
 	}
 	shortURL := uc.shortURLFromID(shortID)
-	for observer := range maps.Values(uc.observersByID) {
-		observer.OnNewURL(ObserverEvent{
-			Time:        time.Now(),
-			UserID:      userID,
-			OriginalURL: url,
-			Action:      NewURLAction,
-		})
+	if uc.observersByID != nil && err != nil {
+		for observer := range maps.Values(uc.observersByID) {
+			observer.OnNewURL(ObserverEvent{
+				Time:        time.Now(),
+				UserID:      userID,
+				OriginalURL: url,
+			})
+		}
 	}
 	return shortURL, err
 }
