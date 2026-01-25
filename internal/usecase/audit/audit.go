@@ -25,18 +25,12 @@ func convertEventToLog(ev usecase.ObserverEvent, action string) audit_repo.Audit
 }
 
 func (obs *AuditObserver) OnNewURL(ev usecase.ObserverEvent) {
-	if obs.repositories == nil {
-		return
-	}
 	for repo := range slices.Values(obs.repositories) {
 		go repo.WriteLog(convertEventToLog(ev, NewURLAction))
 	}
 }
 
 func (obs *AuditObserver) OnGetURL(ev usecase.ObserverEvent) {
-	if obs.repositories == nil {
-		return
-	}
 	for repo := range slices.Values(obs.repositories) {
 		go repo.WriteLog(convertEventToLog(ev, FollowURLAction))
 	}

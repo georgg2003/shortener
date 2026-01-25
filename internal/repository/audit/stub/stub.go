@@ -14,7 +14,7 @@ func (s *auditStub) WriteLog(log audit.AuditLog) error {
 	return nil
 }
 
-func New(logger *logrus.Entry) *auditStub {
+func New(logger *logrus.Entry) audit.AuditRepository {
 	logger.Warn("using audit stub")
 	return &auditStub{logger: logger}
 }

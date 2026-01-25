@@ -37,7 +37,7 @@ func (repo *auditFileRepository) WriteLog(log audit.AuditLog) error {
 	}
 	defer f.Close()
 
-	if _, err := f.WriteString(fmt.Sprintf("%s\n", data)); err != nil {
+	if _, err := fmt.Fprintf(f, "%s\n", data); err != nil {
 		return utils.ErrWrap(err, "failed to write an audit log")
 	}
 
