@@ -20,6 +20,8 @@ import (
 
 const TestUserID = 1
 
+var ErrSomeError = errors.New("some error")
+
 type DeliveryTestCase struct {
 	Name       string
 	Method     string
@@ -27,7 +29,7 @@ type DeliveryTestCase struct {
 	Body       any
 	StatusCode int
 	Response   []byte
-	MockFunc   func()
+	MockFunc   func(t *testing.T)
 }
 
 type TestServer struct {
@@ -61,7 +63,7 @@ func (ts *TestServer) MakeRequest(t *testing.T, method, path string, body any) *
 func (ts *TestServer) RunTestCase(tc DeliveryTestCase) func(t *testing.T) {
 	return func(t *testing.T) {
 		if tc.MockFunc != nil {
-			tc.MockFunc()
+			tc.MockFunc(t)
 		}
 		resp := ts.MakeRequest(t, tc.Method, tc.Path, tc.Body)
 
