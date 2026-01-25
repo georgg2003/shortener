@@ -25,3 +25,4 @@ vendor/
 
 # File storage
 data.json
+audit.log
