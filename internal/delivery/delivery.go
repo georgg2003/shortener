@@ -1,10 +1,8 @@
 package delivery
 
 import (
-	"context"
-
 	"github.com/georgg2003/shortener/internal/config"
-	"github.com/georgg2003/shortener/internal/models"
+	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/georgg2003/shortener/pkg/middlewares"
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
@@ -16,24 +14,14 @@ type Delivery interface {
 	GetNewRouter() chi.Router
 }
 
-type UseCase interface {
-	NewShortURL(ctx context.Context, url string) (string, error)
-	NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error
-	ProcessShortURL(ctx context.Context, id string) (string, bool, error)
-	Ping(ctx context.Context) error
-	NewUser(ctx context.Context) (int64, error)
-	GetUserURLs(ctx context.Context) ([]models.URLEntity, error)
-	DeleteUserURLs(ctx context.Context, urls []string) error
-}
-
 type delivery struct {
-	usecase UseCase
+	usecase usecase.UseCase
 	logger  *logrus.Logger
 	cfg     *config.Config
 }
 
 func New(
-	usecase UseCase,
+	usecase usecase.UseCase,
 	logger *logrus.Logger,
 	cfg *config.Config,
 ) Delivery {

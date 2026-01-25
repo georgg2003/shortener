@@ -16,7 +16,7 @@ PKG := ./...
 
 export PATH := $(GOPATH)/bin:$(PATH)
 
-.PHONY: all tidy deps build run test mock migrate-up migrate-down clean
+.PHONY: all tidy build run test mock migrate-up migrate-down clean
 
 all: build
 
@@ -27,9 +27,9 @@ all: build
 tidy:
 	$(GO) mod tidy
 
-deps:
-	$(GO) install go.uber.org/mock/mockgen@latest
-	$(GO) install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+tidyvendor:
+	$(GO) mod tidy
+	$(GO) mod vendor
 
 ## ---------------------------
 ## Build & Run
@@ -39,7 +39,7 @@ build:
 	$(GO) build -o bin/$(BINARY) $(PKG)
 
 run:
-	$(GO) run $(PKG) -d $(DB_URL)
+	AUDIT_STUB_ENABLED=1 AUDIT_FILE=./audit.log AUDIT_URL=http://localhost:8000 $(GO) run $(PKG) -d $(DB_URL)
 
 clean:
 	rm -rf bin

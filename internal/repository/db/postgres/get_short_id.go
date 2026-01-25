@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	repo "github.com/georgg2003/shortener/internal/repository"
+	"github.com/georgg2003/shortener/internal/repository/db"
 	"github.com/georgg2003/shortener/pkg/utils"
 	"github.com/jackc/pgx/v5"
 )
@@ -23,7 +23,7 @@ func (r *repository) GetShortID(ctx context.Context, originalURL string) (string
 	err = row.Scan(&shortID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			err = repo.ErrNotFound
+			err = db.ErrNotFound
 		} else {
 			err = utils.ErrWrap(err, errFailedToScan.Error())
 		}

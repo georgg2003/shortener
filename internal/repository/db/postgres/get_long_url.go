@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	repo "github.com/georgg2003/shortener/internal/repository"
+	"github.com/georgg2003/shortener/internal/repository/db"
 	"github.com/georgg2003/shortener/pkg/utils"
 	"github.com/jackc/pgx/v5"
 )
@@ -24,7 +24,7 @@ func (r *repository) GetLongURL(ctx context.Context, shortID string) (string, bo
 	err = row.Scan(&longURL, &isDeleted)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			err = repo.ErrNotFound
+			err = db.ErrNotFound
 		} else {
 			err = utils.ErrWrap(err, errFailedToScan.Error())
 		}

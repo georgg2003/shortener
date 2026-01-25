@@ -11,7 +11,7 @@ import (
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/delivery"
 	"github.com/georgg2003/shortener/internal/models"
-	"github.com/georgg2003/shortener/internal/repository/storage"
+	"github.com/georgg2003/shortener/internal/repository/db/storage"
 	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"

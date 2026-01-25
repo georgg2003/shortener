@@ -22,10 +22,12 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
-	golang.org/x/crypto v0.37.0 // indirect
+	golang.org/x/crypto v0.41.0 // indirect
+	golang.org/x/mod v0.27.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.24.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/tools v0.36.0 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
 )
 
@@ -38,7 +40,9 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.9.3
-	golang.org/x/net v0.38.0 // indirect
+	golang.org/x/net v0.43.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+tool go.uber.org/mock/mockgen
