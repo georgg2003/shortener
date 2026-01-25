@@ -19,6 +19,7 @@ type Config struct {
 	AuditFile        string `mapstructure:"audit_file" env:"AUDIT_FILE" flag:"audit-file" flag_usage:"file to write audit logs"`
 	AuditURL         string `mapstructure:"audit_url" env:"AUDIT_URL" flag:"audit-url" flag_usage:"url to send audit logs"`
 	AuditStubEnabled bool   `mapstructure:"audit_stub_enabled" env:"AUDIT_STUB_ENABLED"`
+	DebugAddr        string `mapstructure:"debug_addr" env:"DEBUG_ADDR" flag:"debug-addr" flag_usage:"debug listen addres"`
 }
 
 func New() *Config {

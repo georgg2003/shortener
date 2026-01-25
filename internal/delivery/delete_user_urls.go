@@ -18,11 +18,13 @@ func (d *delivery) DeleteUserURLs(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
 		e := utils.ErrWrap(err, errDecodeBody.Error())
-		http.Error(w, e.Error(), http.StatusBadRequest)
+		d.logger.WithError(e).Info("bad request")
+		http.Error(w, "failed to decode body", http.StatusBadRequest)
 		return
 	}
 
 	if err := d.usecase.DeleteUserURLs(ctx, req); err != nil {
+		d.logger.WithError(err).Error("delete user urls internal err")
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}

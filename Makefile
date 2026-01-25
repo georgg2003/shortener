@@ -15,6 +15,10 @@ GOPATH := $(shell go env GOPATH)
 PKG := ./...
 
 export PATH := $(GOPATH)/bin:$(PATH)
+export AUDIT_STUB_ENABLED=1
+export AUDIT_FILE=./audit.log
+export AUDIT_URL=http://localhost:8000
+export DEBUG_ADDR=localhost:6060
 
 .PHONY: all tidy build run test mock migrate-up migrate-down clean
 
@@ -39,7 +43,7 @@ build:
 	$(GO) build -o bin/$(BINARY) $(PKG)
 
 run:
-	AUDIT_STUB_ENABLED=1 AUDIT_FILE=./audit.log AUDIT_URL=http://localhost:8000 $(GO) run $(PKG) -d $(DB_URL)
+	$(GO) run $(PKG) -d $(DB_URL)
 
 clean:
 	rm -rf bin

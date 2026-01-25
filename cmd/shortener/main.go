@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
@@ -46,11 +47,7 @@ func newRepo(ctx context.Context, conf *config.Config, logger *logrus.Logger) db
 	}
 }
 
-func main() {
-	logger := logrus.New()
-	logger.SetFormatter(&logrus.JSONFormatter{})
-	logger.SetLevel(logrus.DebugLevel)
-
+func newConfig(logger *logrus.Logger) *config.Config {
 	conf := config.New()
 	if err := conf.ReadFromEnv(); err != nil {
 		logger.WithError(err).Fatal("failed to read config from env")
@@ -62,9 +59,37 @@ func main() {
 	}
 	fs.Parse(os.Args[1:])
 
+	return conf
+}
+
+func listen(server *http.Server, logger *logrus.Logger) func() error {
+	return func() error {
+		logger.Infof("Listening on %v", server.Addr)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.WithError(err).Error("server failed")
+			return err
+		}
+		return nil
+	}
+}
+
+func listenShutdown(ctx context.Context, server *http.Server, logger *logrus.Logger) func() error {
+	return func() error {
+		<-ctx.Done()
+		logger.Infof("shutting down server")
+		return server.Shutdown(context.Background())
+	}
+}
+
+func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.SetLevel(logrus.DebugLevel)
+
+	conf := newConfig(logger)
 	repo := newRepo(ctx, conf, logger)
 	usecase := usecase.New(repo, conf, logger)
 
@@ -81,22 +106,16 @@ func main() {
 
 	g, ctx := errgroup.WithContext(ctx)
 
-	g.Go(func() error {
-		logger.Infof("Listening on %v", conf.ListenAddr)
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.WithError(err).Error("server failed")
-			return err
-		}
-		return nil
-	})
+	g.Go(listen(server, logger))
+	g.Go(listenShutdown(ctx, server, logger))
 
-	g.Go(func() error {
-		<-ctx.Done()
-		logger.Infof("shutting down server")
-		return server.Shutdown(context.Background())
-	})
+	if conf.DebugAddr != "" {
+		debugServer := &http.Server{Addr: conf.DebugAddr}
+		g.Go(listen(debugServer, logger))
+		g.Go(listenShutdown(ctx, debugServer, logger))
+	}
 
 	if err := g.Wait(); err != nil {
-		logger.WithError(err).Error("application stopped with error")
+		logger.WithError(err).Fatal("application stopped with error")
 	}
 }
