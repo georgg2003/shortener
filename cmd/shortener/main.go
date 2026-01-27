@@ -10,6 +10,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
+
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/delivery"
 	audit_repo "github.com/georgg2003/shortener/internal/repository/audit"
@@ -21,8 +24,6 @@ import (
 	"github.com/georgg2003/shortener/internal/repository/db/storage"
 	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/georgg2003/shortener/internal/usecase/audit"
-	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/errgroup"
 )
 
 func newAuditRepos(cfg *config.Config, logger *logrus.Entry) []audit_repo.AuditRepository {
