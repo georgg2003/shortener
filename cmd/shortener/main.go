@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -32,7 +33,12 @@ func newAuditRepos(cfg *config.Config, logger *logrus.Entry) []audit_repo.AuditR
 		repos = append(repos, audit_storage.New(logger, cfg.AuditFile))
 	}
 	if cfg.AuditURL != "" {
-		repos = append(repos, audit_service.New(logger, cfg.AuditURL))
+		repos = append(repos, audit_service.New(
+			logger,
+			cfg.AuditURL,
+			audit_service.WithRetryCount(5), // TODO add to config
+			audit_service.WithRetryWaitTime(time.Second),
+		))
 	}
 	if cfg.AuditStubEnabled {
 		repos = append(repos, audit_stub.New(logger))

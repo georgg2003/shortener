@@ -1,6 +1,7 @@
 package service
 
 import (
+	"slices"
 	"time"
 
 	"github.com/georgg2003/shortener/internal/repository/audit"
@@ -24,14 +25,30 @@ func (repo *auditServiceRepository) WriteLog(log audit.AuditLog) error {
 	return err
 }
 
-func New(logger *logrus.Entry, addr string) audit.AuditRepository {
-	return &auditServiceRepository{
+type ServiceOption func(*auditServiceRepository)
+
+func WithRetryCount(n int) ServiceOption {
+	return func(asr *auditServiceRepository) {
+		asr.client.SetRetryCount(n)
+	}
+}
+
+func WithRetryWaitTime(wt time.Duration) ServiceOption {
+	return func(asr *auditServiceRepository) {
+		asr.client.SetRetryWaitTime(wt)
+	}
+}
+
+func New(logger *logrus.Entry, addr string, opts ...ServiceOption) audit.AuditRepository {
+	repo := &auditServiceRepository{
 		logger: logger,
 		addr:   addr,
 		client: resty.New().
 			SetLogger(logger).
-			SetBaseURL(addr).
-			SetRetryCount(5).
-			SetRetryWaitTime(time.Second),
+			SetBaseURL(addr),
 	}
+	for opt := range slices.Values(opts) {
+		opt(repo)
+	}
+	return repo
 }
