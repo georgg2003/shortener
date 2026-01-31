@@ -8,6 +8,7 @@ import (
 
 	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/internal/pkg/testutils"
+	"github.com/georgg2003/shortener/pkg/postgres"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -30,7 +31,7 @@ func TestAPIShortenURLBatch(t *testing.T) {
 
 	entity := &models.URLEntity{
 		CorrelationID: "1",
-		OriginalURL:   "https://calendar.mail.ru",
+		OriginalURL:   testutils.TestOriginalURL,
 		ShortID:       testutils.TestShortID,
 		ShortURL:      shortURL,
 	}
@@ -43,13 +44,14 @@ func TestAPIShortenURLBatch(t *testing.T) {
 			Body: models.APIShortenURLBatchRequest{
 				models.APIShortenURLBatchRequestRecord{
 					CorrelationID: "1",
-					OriginalURL:   "https://calendar.mail.ru",
+					OriginalURL:   testutils.TestOriginalURL,
 				},
 			},
 			StatusCode: http.StatusCreated,
 			Response:   bytesResp,
 			MockFunc: func(t *testing.T) {
-				server.Repo.EXPECT().NewShortURLBatch(gomock.Any(), gomock.Eq([]*models.URLEntity{entity}))
+				server.Repo.EXPECT().
+					NewShortURLBatch(gomock.Any(), gomock.Eq([]*models.URLEntity{entity}))
 			},
 		},
 		{
@@ -59,6 +61,28 @@ func TestAPIShortenURLBatch(t *testing.T) {
 			Body:       "12321",
 			StatusCode: http.StatusBadRequest,
 			Response:   []byte("failed to decode body"),
+		},
+		{
+			Name:   "with existing urls",
+			Method: http.MethodPost,
+			Path:   shortenAPIBatchPath,
+			Body: models.APIShortenURLBatchRequest{
+				models.APIShortenURLBatchRequestRecord{
+					CorrelationID: "1",
+					OriginalURL:   testutils.TestOriginalURL,
+				},
+			},
+			StatusCode: http.StatusConflict,
+			Response:   bytesResp,
+			MockFunc: func(t *testing.T) {
+				exp1 := server.Repo.EXPECT().
+					NewShortURLBatch(gomock.Any(), gomock.Eq([]*models.URLEntity{entity})).
+					Return(postgres.ErrUniqueViolation)
+				server.Repo.EXPECT().
+					GetShortIDsBatch(gomock.Any(), gomock.Eq([]*models.URLEntity{entity})).
+					After(exp1).
+					Return(map[string]string{testutils.TestOriginalURL: testutils.TestShortID}, nil)
+			},
 		},
 	}
 	for tc := range slices.Values(testCases) {

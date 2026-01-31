@@ -19,8 +19,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-const TestUserID = 1
-const TestShortID = "01234567"
+const (
+	TestUserID      = 1
+	TestShortID     = "01234567"
+	TestOriginalURL = "https://calendar.mail.ru"
+)
 
 var ErrSomeError = errors.New("some error")
 
