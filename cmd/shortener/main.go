@@ -97,6 +97,8 @@ func main() {
 	auditLogger := logger.WithField("subsystem", "audit")
 	auditRepos := newAuditRepos(conf, auditLogger)
 	observer := audit.NewAuditObserver(auditRepos)
+
+	// Удаляет обсервер после завершения main
 	defer usecase.Observe("audit", observer)()
 
 	delivery := delivery.New(usecase, logger, conf)
