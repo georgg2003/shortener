@@ -62,8 +62,6 @@ func (uc *useCase) NewShortURLBatch(ctx context.Context, entities []*models.URLE
 		v.ShortURL = uc.shortURLFromID(shortID)
 	}
 
-	uc.logger.Warn(entities[0])
-
 	err := uc.repository.NewShortURLBatch(ctx, entities)
 	if err != nil {
 		if postgres.IsUniqueViolation(err) {
