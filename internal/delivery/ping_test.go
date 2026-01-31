@@ -34,7 +34,7 @@ func TestPing(t *testing.T) {
 			MockFunc: func(t *testing.T) {
 				server.Repo.EXPECT().Ping(gomock.Any()).Return(testutils.ErrSomeError)
 			},
-			Response: []byte("ping failed\n"),
+			Response: []byte("ping failed"),
 		},
 	}
 	for tc := range slices.Values(testCases) {

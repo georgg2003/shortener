@@ -3,10 +3,12 @@ package usecase
 import (
 	"context"
 	"errors"
+	"slices"
 
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/internal/repository/db"
+	"github.com/georgg2003/shortener/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,9 +30,18 @@ type useCase struct {
 	deleteUserURLsCh chan models.DeleteUserURLsTask
 	logger           *logrus.Logger
 	observersByID    observersByID
+	base62Gen        utils.Base62Generator
 }
 
-func New(repo db.Repository, conf *config.Config, logger *logrus.Logger) *useCase {
+type UseCaseOption func(uc *useCase)
+
+func WithBase62Generator(generator utils.Base62Generator) UseCaseOption {
+	return func(uc *useCase) {
+		uc.base62Gen = generator
+	}
+}
+
+func New(repo db.Repository, conf *config.Config, logger *logrus.Logger, opts ...UseCaseOption) *useCase {
 	deleteUserURLsCh := make(chan models.DeleteUserURLsTask, 1024)
 
 	uc := useCase{
@@ -38,6 +49,11 @@ func New(repo db.Repository, conf *config.Config, logger *logrus.Logger) *useCas
 		config:           conf,
 		deleteUserURLsCh: deleteUserURLsCh,
 		logger:           logger,
+		base62Gen:        utils.CryptoBase62Generator{},
+	}
+
+	for opt := range slices.Values(opts) {
+		opt(&uc)
 	}
 
 	go uc.deleteUserURLsWorker()

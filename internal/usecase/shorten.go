@@ -25,7 +25,7 @@ func (uc *useCase) shortURLFromID(shortID string) string {
 var errFailedToGetShortID = errors.New("failed to get short id")
 
 func (uc *useCase) NewShortURL(ctx context.Context, url string) (string, error) {
-	shortID := utils.RandomBase62(shortIDLength)
+	shortID := uc.base62Gen.Generate(shortIDLength)
 	userID, _ := contextlib.GetUserID(ctx)
 	err := uc.repository.NewShortURL(ctx, url, shortID)
 	if err != nil {
@@ -57,10 +57,12 @@ var errFailedToGetShortIDsBatch = errors.New("failed to get short ids batch")
 
 func (uc *useCase) NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error {
 	for _, v := range entities {
-		shortID := utils.RandomBase62(shortIDLength)
+		shortID := uc.base62Gen.Generate(shortIDLength)
 		v.ShortID = shortID
 		v.ShortURL = uc.shortURLFromID(shortID)
 	}
+
+	uc.logger.Warn(entities[0])
 
 	err := uc.repository.NewShortURLBatch(ctx, entities)
 	if err != nil {

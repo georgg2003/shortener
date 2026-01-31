@@ -126,7 +126,8 @@ func (d *delivery) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
 		e := errors.Join(err, errDecodeBody)
-		http.Error(w, e.Error(), http.StatusBadRequest)
+		d.logger.WithError(e).Error("bad request")
+		http.Error(w, errDecodeBody.Error(), http.StatusBadRequest)
 		return
 	}
 

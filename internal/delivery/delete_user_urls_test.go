@@ -29,7 +29,7 @@ func TestDeleteUserURLs(t *testing.T) {
 			Path:       deleteUserURLsPath,
 			Body:       "12321",
 			StatusCode: http.StatusBadRequest,
-			Response:   []byte("failed to decode body\n"),
+			Response:   []byte("failed to decode body"),
 		},
 	}
 	for tc := range slices.Values(testCases) {

@@ -11,6 +11,7 @@ import (
 	"github.com/georgg2003/shortener/internal/repository/db/mock"
 	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/georgg2003/shortener/pkg/jwthelper"
+	"github.com/georgg2003/shortener/pkg/utils"
 	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -19,6 +20,7 @@ import (
 )
 
 const TestUserID = 1
+const TestShortID = "01234567"
 
 var ErrSomeError = errors.New("some error")
 
@@ -48,7 +50,7 @@ func (ts *TestServer) MakeRequest(t *testing.T, method, path string, body any) *
 			Value: ts.accessToken,
 		})
 	req.Method = method
-	req.URL = ts.ts.URL + path
+	req.URL = ts.MakeAbsoluteURL(path)
 	req.SetBody(body)
 
 	resp, err := req.Send()
@@ -67,6 +69,10 @@ func (ts *TestServer) RunTestCase(tc DeliveryTestCase) func(t *testing.T) {
 		}
 		resp := ts.MakeRequest(t, tc.Method, tc.Path, tc.Body)
 
+		if len(tc.Response) > 0 {
+			tc.Response = append(tc.Response, '\n')
+		}
+
 		assert.Equal(t, tc.StatusCode, resp.StatusCode())
 		assert.Equal(t, tc.Response, resp.Body())
 	}
@@ -74,6 +80,10 @@ func (ts *TestServer) RunTestCase(tc DeliveryTestCase) func(t *testing.T) {
 
 func (ts *TestServer) Close() {
 	ts.ts.Close()
+}
+
+func (ts *TestServer) MakeAbsoluteURL(path string) string {
+	return ts.ts.URL + path
 }
 
 func NewTestServer(t *testing.T) *TestServer {
@@ -88,7 +98,8 @@ func NewTestServer(t *testing.T) *TestServer {
 	ctrl := gomock.NewController(t)
 	repo := mock.NewMockRepository(ctrl)
 
-	usecase := usecase.New(repo, cfg, logger)
+	gen := utils.StubGenerator{}
+	usecase := usecase.New(repo, cfg, logger, usecase.WithBase62Generator(gen))
 	delivery := delivery.New(usecase, logger, cfg)
 
 	r := delivery.GetNewRouter()
