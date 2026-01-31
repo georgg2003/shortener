@@ -17,24 +17,28 @@ func TestPing(t *testing.T) {
 
 	testCases := []testutils.DeliveryTestCase{
 		{
-			Name:       "success",
-			Method:     http.MethodGet,
-			Path:       pingPath,
-			StatusCode: http.StatusOK,
-			MockFunc: func(t *testing.T) {
-				server.Repo.EXPECT().Ping(gomock.Any())
+			Common: testutils.Common{
+				Name:   "success",
+				Method: http.MethodGet,
+				Path:   pingPath,
+				MockFunc: func(t testutils.TestReporter, ts *testutils.TestServer) {
+					server.Repo.EXPECT().Ping(gomock.Any())
+				},
 			},
-			Response: []byte(""),
+			StatusCode: http.StatusOK,
+			Response:   []byte(""),
 		},
 		{
-			Name:       "fail",
-			Method:     http.MethodGet,
-			Path:       pingPath,
-			StatusCode: http.StatusInternalServerError,
-			MockFunc: func(t *testing.T) {
-				server.Repo.EXPECT().Ping(gomock.Any()).Return(testutils.ErrSomeError)
+			Common: testutils.Common{
+				Name:   "fail",
+				Method: http.MethodGet,
+				Path:   pingPath,
+				MockFunc: func(t testutils.TestReporter, ts *testutils.TestServer) {
+					server.Repo.EXPECT().Ping(gomock.Any()).Return(testutils.ErrSomeError)
+				},
 			},
-			Response: []byte("ping failed"),
+			StatusCode: http.StatusInternalServerError,
+			Response:   []byte("ping failed"),
 		},
 	}
 	for tc := range slices.Values(testCases) {

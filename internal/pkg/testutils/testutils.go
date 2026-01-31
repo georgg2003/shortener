@@ -27,14 +27,28 @@ const (
 
 var ErrSomeError = errors.New("some error")
 
+type TestReporter interface {
+	Errorf(format string, args ...any)
+	Fatalf(format string, args ...any)
+	FailNow()
+}
+
+type Common struct {
+	Name     string
+	Method   string
+	Path     string
+	Body     any
+	MockFunc func(t TestReporter, ts *TestServer)
+}
+
 type DeliveryTestCase struct {
-	Name       string
-	Method     string
-	Path       string
-	Body       any
+	Common
 	StatusCode int
 	Response   []byte
-	MockFunc   func(t *testing.T)
+}
+
+type DeliveryBenchmark struct {
+	Common
 }
 
 type TestServer struct {
@@ -44,7 +58,7 @@ type TestServer struct {
 	Repo *mock.MockRepository
 }
 
-func (ts *TestServer) MakeRequest(t *testing.T, method, path string, body any) *resty.Response {
+func (ts *TestServer) MakeRequest(t TestReporter, method, path string, body any) *resty.Response {
 	req := resty.New().
 		SetRedirectPolicy(resty.NoRedirectPolicy()).
 		R().
@@ -68,7 +82,7 @@ func (ts *TestServer) MakeRequest(t *testing.T, method, path string, body any) *
 func (ts *TestServer) RunTestCase(tc DeliveryTestCase) func(t *testing.T) {
 	return func(t *testing.T) {
 		if tc.MockFunc != nil {
-			tc.MockFunc(t)
+			tc.MockFunc(t, ts)
 		}
 		resp := ts.MakeRequest(t, tc.Method, tc.Path, tc.Body)
 
@@ -81,6 +95,17 @@ func (ts *TestServer) RunTestCase(tc DeliveryTestCase) func(t *testing.T) {
 	}
 }
 
+func (ts *TestServer) RunBenchmark(tc DeliveryBenchmark) func(b *testing.B) {
+	return func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			if tc.MockFunc != nil {
+				tc.MockFunc(b, ts)
+			}
+			ts.MakeRequest(b, tc.Method, tc.Path, tc.Body)
+		}
+	}
+}
+
 func (ts *TestServer) Close() {
 	ts.ts.Close()
 }
@@ -89,7 +114,7 @@ func (ts *TestServer) MakeAbsoluteURL(path string) string {
 	return ts.ts.URL + path
 }
 
-func NewTestServer(t *testing.T) *TestServer {
+func NewTestServer(t TestReporter) *TestServer {
 	ts := httptest.NewServer(nil)
 	logger := logrus.New()
 

@@ -16,18 +16,22 @@ func TestDeleteUserURLs(t *testing.T) {
 
 	testCases := []testutils.DeliveryTestCase{
 		{
-			Name:       "success",
-			Method:     http.MethodDelete,
-			Path:       deleteUserURLsPath,
-			Body:       []string{"1"},
+			Common: testutils.Common{
+				Name:   "success",
+				Method: http.MethodDelete,
+				Path:   deleteUserURLsPath,
+				Body:   []string{"1"},
+			},
 			StatusCode: http.StatusAccepted,
 			Response:   []byte(""),
 		},
 		{
-			Name:       "bad request",
-			Method:     http.MethodDelete,
-			Path:       deleteUserURLsPath,
-			Body:       "12321",
+			Common: testutils.Common{
+				Name:   "bad request",
+				Method: http.MethodDelete,
+				Path:   deleteUserURLsPath,
+				Body:   "12321",
+			},
 			StatusCode: http.StatusBadRequest,
 			Response:   []byte("failed to decode body"),
 		},
