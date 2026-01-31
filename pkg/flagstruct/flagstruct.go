@@ -1,3 +1,14 @@
+// Пакет, который упрощает парсинг конфига приложения из флагов.
+// Пример конфига:
+//
+//	type Config struct {
+//		ListenAddr       string `flag:"a" flag_usage:"listen addres"`
+//		AuditURL         string `flag:"audit-url" flag_usage:"url to send audit logs"`
+//		AuditStubEnabled bool   `mapstructure:"audit_stub_enabled" env:"AUDIT_STUB_ENABLED"`
+//		DebugAddr        string `flag:"debug-addr"`
+//	}
+//
+// TODO: Сейчас поддерживает только парсинг в строки. Нужно добавить поддержку других типов
 package flagstruct
 
 import (
@@ -6,8 +17,6 @@ import (
 	"fmt"
 	"reflect"
 )
-
-// TODO support another types
 
 func ReadFromFlags(fs *flag.FlagSet, c any) error {
 	v := reflect.ValueOf(c)

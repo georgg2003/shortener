@@ -8,6 +8,8 @@ import (
 	"github.com/georgg2003/shortener/pkg/utils"
 )
 
+// Ручка удаления нескольких сокращенных URL пользователя.
+// Принимает список сокращенных ID.
 func (d *delivery) DeleteUserURLs(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

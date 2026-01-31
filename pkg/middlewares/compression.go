@@ -49,6 +49,9 @@ func (w gzipWriter) Close() error {
 	return nil
 }
 
+// Мидлваря для работы с gzip сжатием.
+// Расжимает тело запроса при наличии соответствующего заголовка Content-Encoding.
+// Сжимает тело ответа при наличии соответствующего заголовка Accept-Encoding.
 func NewGzipCompressionMiddleware() func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {

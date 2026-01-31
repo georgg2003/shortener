@@ -36,6 +36,7 @@ func validateURL(longURL string) error {
 	return nil
 }
 
+// Ручка сокращения URL.
 func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	ctx := r.Context()
@@ -71,6 +72,7 @@ func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(shortURL))
 }
 
+// API ручка для сокращения URL.
 func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	ctx := r.Context()
@@ -114,6 +116,7 @@ func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// API ручка для сокращения нескольких URL.
 func (d *delivery) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	ctx := r.Context()

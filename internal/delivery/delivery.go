@@ -1,3 +1,4 @@
+// Модуль, описывающий REST API ручки сервиса сокращения URL.
 package delivery
 
 import (

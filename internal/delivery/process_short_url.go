@@ -7,6 +7,7 @@ import (
 	"github.com/georgg2003/shortener/internal/repository/db"
 )
 
+// Ручка переадресации на оригинальный URL по сокращенному.
 func (d *delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	ctx := r.Context()

@@ -39,6 +39,10 @@ func createNewUser(
 	return userID, nil
 }
 
+// Авторизационная мидлваря для http сервера.
+// Авторизует по JWT токену в куках.
+// Если пользак не авторизован, создает нового.
+// Текущего пользователя записывает в контекст.
 func NewSimpleAuthMiddleware(
 	cfg *config.Config,
 	l *logrus.Logger,
