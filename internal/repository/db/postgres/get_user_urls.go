@@ -15,6 +15,15 @@ func (r *repository) GetUserURLs(ctx context.Context, userID int64) ([]models.UR
 	}
 	defer conn.Release()
 
+	var count int
+	err = conn.QueryRow(ctx,
+		`SELECT count(*) FROM url_entity WHERE user_id = $1`,
+		userID,
+	).Scan(&count)
+	if err != nil {
+		return nil, utils.ErrWrap(err, "failed to get urls count")
+	}
+
 	rows, err := conn.Query(ctx, `
 		SELECT original_url, short_id
 		FROM url_entity
@@ -23,15 +32,6 @@ func (r *repository) GetUserURLs(ctx context.Context, userID int64) ([]models.UR
 	`, userID)
 	if err != nil {
 		return nil, utils.ErrWrap(err, "failed to get user urls")
-	}
-
-	var count int
-	err = conn.QueryRow(ctx,
-		`SELECT count(*) FROM url_entity WHERE user_id = $1`,
-		userID,
-	).Scan(&count)
-	if err != nil {
-		return nil, utils.ErrWrap(err, "failed to get urls count")
 	}
 
 	arr := make([]models.URLEntity, 0, count)
