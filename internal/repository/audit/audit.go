@@ -7,7 +7,7 @@ type AuditLog struct {
 	URL       string `json:"url"`
 }
 
-//go:generate mockgen -destination ./mock/mock.go -package mock . AuditRepository
+//go:generate go tool mockgen -destination ./mock/mock.go -package mock . AuditRepository
 type AuditRepository interface {
 	WriteLog(AuditLog) error
 }

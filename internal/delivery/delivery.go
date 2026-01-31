@@ -2,6 +2,8 @@
 package delivery
 
 import (
+	"net/http"
+
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/georgg2003/shortener/pkg/middlewares"
@@ -13,6 +15,13 @@ const internalErrorText = "Internal Error"
 
 type Delivery interface {
 	GetNewRouter() chi.Router
+	ShortenURL(w http.ResponseWriter, r *http.Request)
+	ProcessShortURL(w http.ResponseWriter, r *http.Request)
+	APIShortenURL(w http.ResponseWriter, r *http.Request)
+	APIShortenURLBatch(w http.ResponseWriter, r *http.Request)
+	GetUserURLs(w http.ResponseWriter, r *http.Request)
+	DeleteUserURLs(w http.ResponseWriter, r *http.Request)
+	Ping(w http.ResponseWriter, r *http.Request)
 }
 
 type delivery struct {
