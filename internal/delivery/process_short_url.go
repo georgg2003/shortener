@@ -12,11 +12,6 @@ func (d *delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
 	defer d.safeClose(r.Body)
 	ctx := r.Context()
 
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	id := r.PathValue("id")
 	longURL, isDeleted, err := d.usecase.ProcessShortURL(ctx, id)
 	if err != nil {

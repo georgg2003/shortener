@@ -10,6 +10,7 @@ import (
 
 	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/internal/usecase"
+	"github.com/georgg2003/shortener/pkg/utils"
 )
 
 var (
@@ -24,7 +25,7 @@ func validateURL(longURL string) error {
 	parsedURL, parseErr := url.Parse(longURL)
 
 	if parseErr != nil {
-		return errors.Join(parseErr, errInvalidURL)
+		return utils.ErrWrap(parseErr, errInvalidURL.Error())
 	}
 	if parsedURL.Scheme == "" {
 		return errInvalidURLScheme
@@ -50,7 +51,8 @@ func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	longURL := string(bytes)
 
 	if err = validateURL(longURL); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		d.logger.WithError(err).Error("invalid url")
+		http.Error(w, "Invalid url", http.StatusBadRequest)
 		return
 	}
 
@@ -61,7 +63,7 @@ func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(shortURL)))
 
 	if errors.Is(err, usecase.ErrURLEntityAlreadyExists) {
@@ -83,7 +85,7 @@ func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
-		e := errors.Join(err, errDecodeBody)
+		e := utils.ErrWrap(err, errDecodeBody.Error())
 		http.Error(w, e.Error(), http.StatusBadRequest)
 		return
 	}
@@ -104,7 +106,7 @@ func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 		Result: shortURL,
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json")
 	if errors.Is(err, usecase.ErrURLEntityAlreadyExists) {
 		w.WriteHeader(http.StatusConflict)
 	} else {
@@ -160,7 +162,7 @@ func (d *delivery) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json")
 	if errors.Is(err, usecase.ErrURLEntityAlreadyExists) {
 		w.WriteHeader(http.StatusConflict)
 	} else {

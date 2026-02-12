@@ -43,8 +43,9 @@ type Common struct {
 
 type DeliveryTestCase struct {
 	Common
-	StatusCode int
-	Response   []byte
+	StatusCode   int
+	Response     []byte
+	CheckReponse func(t *testing.T, resp *resty.Response)
 }
 
 type DeliveryBenchmark struct {
@@ -58,7 +59,7 @@ type TestServer struct {
 	Repo *mock.MockRepository
 }
 
-func (ts *TestServer) MakeRequest(t TestReporter, method, path string, body any) *resty.Response {
+func (ts *TestServer) makeRequest(t TestReporter, method, path string, body any) *resty.Response {
 	req := resty.New().
 		SetRedirectPolicy(resty.NoRedirectPolicy()).
 		R().
@@ -84,14 +85,14 @@ func (ts *TestServer) RunTestCase(tc DeliveryTestCase) func(t *testing.T) {
 		if tc.MockFunc != nil {
 			tc.MockFunc(t, ts)
 		}
-		resp := ts.MakeRequest(t, tc.Method, tc.Path, tc.Body)
-
-		if len(tc.Response) > 0 {
-			tc.Response = append(tc.Response, '\n')
-		}
+		resp := ts.makeRequest(t, tc.Method, tc.Path, tc.Body)
 
 		assert.Equal(t, tc.StatusCode, resp.StatusCode())
 		assert.Equal(t, tc.Response, resp.Body())
+
+		if tc.CheckReponse != nil {
+			tc.CheckReponse(t, resp)
+		}
 	}
 }
 
@@ -101,7 +102,7 @@ func (ts *TestServer) RunBenchmark(tc DeliveryBenchmark) func(b *testing.B) {
 			if tc.MockFunc != nil {
 				tc.MockFunc(b, ts)
 			}
-			ts.MakeRequest(b, tc.Method, tc.Path, tc.Body)
+			ts.makeRequest(b, tc.Method, tc.Path, tc.Body)
 		}
 	}
 }
