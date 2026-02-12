@@ -9,7 +9,7 @@ import (
 
 // Ручка, возвращающая все URL, сокращенные пользователем.
 func (d *delivery) GetUserURLs(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer d.safeClose(r.Body)
 
 	ctx := r.Context()
 

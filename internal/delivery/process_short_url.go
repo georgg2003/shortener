@@ -9,7 +9,7 @@ import (
 
 // Ручка переадресации на оригинальный URL по сокращенному.
 func (d *delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer d.safeClose(r.Body)
 	ctx := r.Context()
 
 	if r.Method != http.MethodGet {
@@ -24,7 +24,7 @@ func (d *delivery) ProcessShortURL(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Link not found", http.StatusNotFound)
 			return
 		}
-		d.logger.WithContext(ctx).WithError(err).Error("failed to process short url")
+		d.logger.WithError(err).Error("failed to process short url")
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}

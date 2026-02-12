@@ -29,7 +29,7 @@ func (w extendedResponseWriter) WriteHeader(statusCode int) {
 }
 
 // Мидлваря, которая записывает в логи запросы и ответы.
-func NewAccessLogMiddleware(l *logrus.Logger) func(h http.Handler) http.Handler {
+func NewAccessLogMiddleware(l logrus.FieldLogger) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			now := time.Now()
@@ -41,11 +41,11 @@ func NewAccessLogMiddleware(l *logrus.Logger) func(h http.Handler) http.Handler 
 				"uri":    uri,
 			}).Info("Request")
 
-			responseMetaData := responseMetaData{}
+			responseMeta := responseMetaData{}
 
 			writer := extendedResponseWriter{
 				ResponseWriter:   w,
-				responseMetaData: &responseMetaData,
+				responseMetaData: &responseMeta,
 			}
 
 			h.ServeHTTP(writer, r)
@@ -54,8 +54,8 @@ func NewAccessLogMiddleware(l *logrus.Logger) func(h http.Handler) http.Handler 
 
 			l.WithFields(logrus.Fields{
 				"duration":    duration.String(),
-				"status_code": responseMetaData.statusCode,
-				"body_size":   responseMetaData.bodySize,
+				"status_code": responseMeta.statusCode,
+				"body_size":   responseMeta.bodySize,
 			}).Info("Response")
 		}
 		return http.HandlerFunc(fn)

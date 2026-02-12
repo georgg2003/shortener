@@ -36,14 +36,13 @@ func (r *repository) NewShortURLBatch(ctx context.Context, entities []*models.UR
 	var hasUniqueViolationErr bool
 
 	for _, v := range entities {
-		res, err := tx.Exec(ctx, `
+		res, txErr := tx.Exec(ctx, `
 			INSERT INTO url_entity (short_id, original_url, user_id)
 			VALUES ($1, $2, $3)
 			ON CONFLICT DO NOTHING
 		`, v.ShortID, v.OriginalURL, userIDParam)
-		if err != nil {
-			err = utils.ErrWrap(err, errFailedToInsertNewShortURL.Error())
-			return err
+		if txErr != nil {
+			return utils.ErrWrap(txErr, errFailedToInsertNewShortURL.Error())
 		}
 		if res.RowsAffected() == 0 {
 			hasUniqueViolationErr = true

@@ -61,6 +61,9 @@ coverage:
 	mv coverage.filtered.out coverage.out
 	$(GO) tool cover -func=coverage.out
 
+lint:
+	$(GO) run ./cmd/staticlint $(PKG)   
+
 ## ---------------------------
 ## Generate mocks and stuff
 ## ---------------------------

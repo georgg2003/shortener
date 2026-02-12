@@ -43,7 +43,7 @@ func (c *Config) ReadFromYaml() error {
 
 	var raw any
 
-	if err := yaml.Unmarshal(f, &raw); err != nil {
+	if err = yaml.Unmarshal(f, &raw); err != nil {
 		return err
 	}
 
