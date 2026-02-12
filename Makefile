@@ -15,8 +15,12 @@ GOPATH := $(shell go env GOPATH)
 PKG := ./...
 
 export PATH := $(GOPATH)/bin:$(PATH)
+export AUDIT_STUB_ENABLED=1
+export AUDIT_FILE=./audit.log
+export AUDIT_URL=http://localhost:8000
+export DEBUG_ADDR=localhost:6060
 
-.PHONY: all tidy deps build run test mock migrate-up migrate-down clean
+.PHONY: all tidy build run test mock migrate-up migrate-down clean
 
 all: build
 
@@ -27,9 +31,9 @@ all: build
 tidy:
 	$(GO) mod tidy
 
-deps:
-	$(GO) install go.uber.org/mock/mockgen@latest
-	$(GO) install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+tidyvendor:
+	$(GO) mod tidy
+	$(GO) mod vendor
 
 ## ---------------------------
 ## Build & Run
@@ -53,7 +57,7 @@ test:
 
 coverage: 
 	$(GO) test $(PKG) -covermode=count -coverpkg=$(PKG) -coverprofile=coverage.out
-	grep -vE "(mock\.go|/mock/)" coverage.out > coverage.filtered.out
+	grep -vE "(mock\.go|/mock/|/*.gen.go|/testutils/)" coverage.out > coverage.filtered.out
 	mv coverage.filtered.out coverage.out
 	$(GO) tool cover -func=coverage.out
 

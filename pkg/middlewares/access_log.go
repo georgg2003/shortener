@@ -28,6 +28,7 @@ func (w extendedResponseWriter) WriteHeader(statusCode int) {
 	w.responseMetaData.statusCode = statusCode
 }
 
+// Мидлваря, которая записывает в логи запросы и ответы.
 func NewAccessLogMiddleware(l *logrus.Logger) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {

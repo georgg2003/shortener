@@ -1,3 +1,4 @@
+// Утилиты для работы с файловым JSON хранилищем
 package storage
 
 import (

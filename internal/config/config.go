@@ -4,18 +4,22 @@ import (
 	"flag"
 	"os"
 
+	"github.com/georgg2003/shortener/pkg/flagstruct"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
-	ListenAddr      string `mapstructure:"listen_addr" env:"SERVER_ADDRESS"`
-	BaseURL         string `mapstructure:"base_url" env:"BASE_URL"`
-	FileStoragePath string `mapstructure:"file_storage_path" env:"FILE_STORAGE_PATH"`
-	DataBaseDSN     string `mapstructure:"database_dsn" env:"DATABASE_DSN"`
-	PostgresEnabled bool   `mapstructure:"postgres_enabled" env:"POSTGRES_ENABLED"`
-	JWTSecretKey    string `mapstructure:"jwt_secret_key" env:"JWT_SECRET_KEY"`
+	ListenAddr       string `mapstructure:"listen_addr" env:"SERVER_ADDRESS" flag:"a" flag_usage:"listen addres"`
+	BaseURL          string `mapstructure:"base_url" env:"BASE_URL" flag:"b" flag_usage:"base_url"`
+	FileStoragePath  string `mapstructure:"file_storage_path" env:"FILE_STORAGE_PATH" flag:"f" flag_usage:"file storage path"`
+	DataBaseDSN      string `mapstructure:"database_dsn" env:"DATABASE_DSN" flag:"d" flag_usage:"database dsn"`
+	JWTSecretKey     string `mapstructure:"jwt_secret_key" env:"JWT_SECRET_KEY" flag:"k" flag_usage:"jwt secret key"`
+	AuditFile        string `mapstructure:"audit_file" env:"AUDIT_FILE" flag:"audit-file" flag_usage:"file to write audit logs"`
+	AuditURL         string `mapstructure:"audit_url" env:"AUDIT_URL" flag:"audit-url" flag_usage:"url to send audit logs"`
+	AuditStubEnabled bool   `mapstructure:"audit_stub_enabled" env:"AUDIT_STUB_ENABLED"`
+	DebugAddr        string `mapstructure:"debug_addr" env:"DEBUG_ADDR" flag:"debug-addr" flag_usage:"debug listen addres"`
 }
 
 func New() *Config {
@@ -55,29 +59,8 @@ func (c *Config) ReadFromYaml() error {
 	return nil
 }
 
-func (c *Config) ReadFromFlags() {
-	listenAddr := flag.String("a", "", "listen addres")
-	baseURL := flag.String("b", "", "base url")
-	fileStoragePath := flag.String("f", "", "file storage path")
-	dataBaseDSN := flag.String("d", "", "database dsn")
-	jwtSecretKey := flag.String("k", "", "jwt secret key")
-	flag.Parse()
-
-	if listenAddr != nil && *listenAddr != "" {
-		c.ListenAddr = *listenAddr
-	}
-	if baseURL != nil && *baseURL != "" {
-		c.BaseURL = *baseURL
-	}
-	if fileStoragePath != nil && *fileStoragePath != "" {
-		c.FileStoragePath = *fileStoragePath
-	}
-	if dataBaseDSN != nil && *dataBaseDSN != "" {
-		c.DataBaseDSN = *dataBaseDSN
-	}
-	if jwtSecretKey != nil && *jwtSecretKey != "" {
-		c.JWTSecretKey = *jwtSecretKey
-	}
+func (c *Config) ReadFromFlags(fs *flag.FlagSet) error {
+	return flagstruct.ReadFromFlags(fs, c)
 }
 
 func (c *Config) ReadFromEnv() error {

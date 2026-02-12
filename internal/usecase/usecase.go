@@ -3,35 +3,45 @@ package usecase
 import (
 	"context"
 	"errors"
+	"slices"
 
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/models"
+	"github.com/georgg2003/shortener/internal/repository/db"
+	"github.com/georgg2003/shortener/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
 var errUserNotFound = errors.New("user is not found")
 
-//go:generate mockgen -destination ./mock/mock.go -package mock . Repository
-type Repository interface {
-	NewShortURL(ctx context.Context, url string, shortID string) error
-	GetLongURL(ctx context.Context, shortID string) (string, bool, error)
-	GetShortID(ctx context.Context, originalURL string) (string, error)
-	GetShortIDsBatch(ctx context.Context, entities []*models.URLEntity) (map[string]string, error)
-	Ping(ctx context.Context) error
+type UseCase interface {
+	NewShortURL(ctx context.Context, url string) (string, error)
 	NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error
+	ProcessShortURL(ctx context.Context, id string) (string, bool, error)
+	Ping(ctx context.Context) error
 	NewUser(ctx context.Context) (int64, error)
-	GetUserURLs(ctx context.Context, userID int64) ([]models.URLEntity, error)
-	DeleteUserURLs(ctx context.Context, tasks []models.DeleteUserURLsTask) error
+	GetUserURLs(ctx context.Context) ([]models.URLEntity, error)
+	DeleteUserURLs(ctx context.Context, urls []string) error
 }
 
 type useCase struct {
-	repository       Repository
+	repository       db.Repository
 	config           *config.Config
 	deleteUserURLsCh chan models.DeleteUserURLsTask
 	logger           *logrus.Logger
+	observersByID    observersByID
+	base62Gen        utils.Base62Generator
 }
 
-func New(repo Repository, conf *config.Config, logger *logrus.Logger) *useCase {
+type UseCaseOption func(uc *useCase)
+
+func WithBase62Generator(generator utils.Base62Generator) UseCaseOption {
+	return func(uc *useCase) {
+		uc.base62Gen = generator
+	}
+}
+
+func New(repo db.Repository, conf *config.Config, logger *logrus.Logger, opts ...UseCaseOption) *useCase {
 	deleteUserURLsCh := make(chan models.DeleteUserURLsTask, 1024)
 
 	uc := useCase{
@@ -39,6 +49,11 @@ func New(repo Repository, conf *config.Config, logger *logrus.Logger) *useCase {
 		config:           conf,
 		deleteUserURLsCh: deleteUserURLsCh,
 		logger:           logger,
+		base62Gen:        utils.CryptoBase62Generator{},
+	}
+
+	for opt := range slices.Values(opts) {
+		opt(&uc)
 	}
 
 	go uc.deleteUserURLsWorker()

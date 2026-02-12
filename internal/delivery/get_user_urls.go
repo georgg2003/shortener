@@ -7,6 +7,7 @@ import (
 	"github.com/georgg2003/shortener/internal/models"
 )
 
+// Ручка, возвращающая все URL, сокращенные пользователем.
 func (d *delivery) GetUserURLs(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -14,8 +15,8 @@ func (d *delivery) GetUserURLs(w http.ResponseWriter, r *http.Request) {
 
 	entities, err := d.usecase.GetUserURLs(ctx)
 	if err != nil {
-		d.logger.WithError(err).Error("ping failed")
-		http.Error(w, "ping failed", http.StatusInternalServerError)
+		d.logger.WithError(err).Error("get user urls failed")
+		http.Error(w, "get user urls failed", http.StatusInternalServerError)
 		return
 	}
 

@@ -1,3 +1,4 @@
+// Пакет для работы с контекстом.
 package contextlib
 
 import "context"

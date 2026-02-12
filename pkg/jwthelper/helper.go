@@ -1,9 +1,12 @@
+// Пакет, упрощающий работу с JWT токенами.
 package jwthelper
 
 import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+// Содержимое JWT токена.
+// Пока поддерживает только ID пользователя.
 type TokenClaims struct {
 	jwt.RegisteredClaims
 	UserID int64

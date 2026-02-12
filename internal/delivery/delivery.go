@@ -1,10 +1,11 @@
+// Модуль, описывающий REST API ручки сервиса сокращения URL.
 package delivery
 
 import (
-	"context"
+	"net/http"
 
 	"github.com/georgg2003/shortener/internal/config"
-	"github.com/georgg2003/shortener/internal/models"
+	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/georgg2003/shortener/pkg/middlewares"
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
@@ -14,26 +15,23 @@ const internalErrorText = "Internal Error"
 
 type Delivery interface {
 	GetNewRouter() chi.Router
-}
-
-type UseCase interface {
-	NewShortURL(ctx context.Context, url string) (string, error)
-	NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error
-	ProcessShortURL(ctx context.Context, id string) (string, bool, error)
-	Ping(ctx context.Context) error
-	NewUser(ctx context.Context) (int64, error)
-	GetUserURLs(ctx context.Context) ([]models.URLEntity, error)
-	DeleteUserURLs(ctx context.Context, urls []string) error
+	ShortenURL(w http.ResponseWriter, r *http.Request)
+	ProcessShortURL(w http.ResponseWriter, r *http.Request)
+	APIShortenURL(w http.ResponseWriter, r *http.Request)
+	APIShortenURLBatch(w http.ResponseWriter, r *http.Request)
+	GetUserURLs(w http.ResponseWriter, r *http.Request)
+	DeleteUserURLs(w http.ResponseWriter, r *http.Request)
+	Ping(w http.ResponseWriter, r *http.Request)
 }
 
 type delivery struct {
-	usecase UseCase
+	usecase usecase.UseCase
 	logger  *logrus.Logger
 	cfg     *config.Config
 }
 
 func New(
-	usecase UseCase,
+	usecase usecase.UseCase,
 	logger *logrus.Logger,
 	cfg *config.Config,
 ) Delivery {

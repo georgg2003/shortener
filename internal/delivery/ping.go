@@ -2,6 +2,7 @@ package delivery
 
 import "net/http"
 
+// Пинг ручка для проверки работоспособности сервиса.
 func (d *delivery) Ping(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
