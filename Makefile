@@ -71,6 +71,9 @@ lint:
 generate:
 	$(GO) generate $(PKG)
 
+gen-reset:
+	$(GO) go run ./cmd/reset/main.go $(PKG)
+
 ## ---------------------------
 ## Migrations
 ## ---------------------------
