@@ -61,12 +61,18 @@ coverage:
 	mv coverage.filtered.out coverage.out
 	$(GO) tool cover -func=coverage.out
 
+lint:
+	$(GO) run ./cmd/staticlint $(PKG)   
+
 ## ---------------------------
 ## Generate mocks and stuff
 ## ---------------------------
 
 generate:
 	$(GO) generate $(PKG)
+
+gen-reset:
+	$(GO) go run ./cmd/reset/main.go $(PKG)
 
 ## ---------------------------
 ## Migrations

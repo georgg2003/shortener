@@ -37,7 +37,7 @@ func (r *repository) GetUserURLs(ctx context.Context, userID int64) ([]models.UR
 	arr := make([]models.URLEntity, 0, count)
 	for rows.Next() {
 		var entity models.URLEntity
-		if err := rows.Scan(&entity.OriginalURL, &entity.ShortID); err != nil {
+		if err = rows.Scan(&entity.OriginalURL, &entity.ShortID); err != nil {
 			return nil, err
 		}
 		arr = append(arr, entity)

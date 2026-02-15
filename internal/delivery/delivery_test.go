@@ -165,7 +165,7 @@ func TestDelivery(t *testing.T) {
 				if statusCode == http.StatusCreated {
 					b := res.Body()
 					var resp models.APIShortenURLResponse
-					json.Unmarshal(b, &resp)
+					require.NoError(t, json.Unmarshal(b, &resp))
 					shortURL = resp.Result
 
 					require.NotEmpty(t, shortURL)

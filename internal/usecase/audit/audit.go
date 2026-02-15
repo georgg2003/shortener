@@ -6,6 +6,7 @@ import (
 
 	audit_repo "github.com/georgg2003/shortener/internal/repository/audit"
 	"github.com/georgg2003/shortener/internal/usecase"
+	"github.com/sirupsen/logrus"
 )
 
 const NewURLAction = "shorten"
@@ -13,6 +14,7 @@ const FollowURLAction = "follow"
 
 type AuditObserver struct {
 	repositories []audit_repo.AuditRepository
+	logger       *logrus.Entry
 }
 
 func convertEventToLog(ev usecase.ObserverEvent, action string) audit_repo.AuditLog {
@@ -26,18 +28,27 @@ func convertEventToLog(ev usecase.ObserverEvent, action string) audit_repo.Audit
 
 func (obs *AuditObserver) OnNewURL(ev usecase.ObserverEvent) {
 	for repo := range slices.Values(obs.repositories) {
-		go repo.WriteLog(convertEventToLog(ev, NewURLAction))
+		go func() {
+			if err := repo.WriteLog(convertEventToLog(ev, NewURLAction)); err != nil {
+				obs.logger.WithError(err).Error("failed to write new url log")
+			}
+		}()
 	}
 }
 
 func (obs *AuditObserver) OnGetURL(ev usecase.ObserverEvent) {
 	for repo := range slices.Values(obs.repositories) {
-		go repo.WriteLog(convertEventToLog(ev, FollowURLAction))
+		go func() {
+			if err := repo.WriteLog(convertEventToLog(ev, FollowURLAction)); err != nil {
+				obs.logger.WithError(err).Error("failed to write follow url log")
+			}
+		}()
 	}
 }
 
-func NewAuditObserver(repos []audit_repo.AuditRepository) usecase.Observer {
+func NewAuditObserver(repos []audit_repo.AuditRepository, logger *logrus.Entry) usecase.Observer {
 	return &AuditObserver{
 		repositories: repos,
+		logger:       logger,
 	}
 }

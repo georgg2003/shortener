@@ -35,13 +35,17 @@ func (repo *auditFileRepository) WriteLog(log audit.AuditLog) error {
 	if err != nil {
 		return utils.ErrWrap(err, "failed to open an audit file")
 	}
-	defer f.Close()
+	defer func() {
+		if err = f.Close(); err != nil {
+			err = utils.ErrWrap(err, "failed to close file")
+		}
+	}()
 
-	if _, err := fmt.Fprintf(f, "%s\n", data); err != nil {
+	if _, err = fmt.Fprintf(f, "%s\n", data); err != nil {
 		return utils.ErrWrap(err, "failed to write an audit log")
 	}
 
-	return nil
+	return err
 }
 
 func New(logger *logrus.Entry, filename string) audit.AuditRepository {

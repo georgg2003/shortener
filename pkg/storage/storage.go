@@ -41,7 +41,11 @@ func (s *SyncMapStorage) recoverFromFile() {
 		s.logger.WithError(err).Error("failed to open file storage")
 		return
 	}
-	defer file.Close()
+	defer func() {
+		if err = file.Close(); err != nil {
+			s.logger.WithError(err).Error("failed to close file storage")
+		}
+	}()
 
 	decoder := json.NewDecoder(file)
 

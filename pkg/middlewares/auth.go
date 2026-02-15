@@ -45,7 +45,7 @@ func createNewUser(
 // Текущего пользователя записывает в контекст.
 func NewSimpleAuthMiddleware(
 	cfg *config.Config,
-	l *logrus.Logger,
+	l logrus.FieldLogger,
 	uc UseCase,
 ) func(h http.Handler) http.Handler {
 	helper := jwthelper.New([]byte(cfg.JWTSecretKey))
@@ -57,14 +57,14 @@ func NewSimpleAuthMiddleware(
 			token, err := r.Cookie(tokenCookieName)
 			if errors.Is(err, http.ErrNoCookie) {
 				if userID, err = createNewUser(ctx, uc, w, helper); err != nil {
-					l.WithContext(ctx).WithError(err).Error("failed to create new user in middleware")
+					l.WithError(err).Error("failed to create new user in middleware")
 					http.Error(w, "failed to create a new user", http.StatusInternalServerError)
 					return
 				}
 			} else {
 				userID, err = helper.ReadAccessToken(token.Value)
 				if err != nil {
-					l.WithContext(ctx).WithError(err).Error("got an invalid token")
+					l.WithError(err).Error("got an invalid token")
 					http.Error(w, "Invalid token", http.StatusUnauthorized)
 					return
 				}

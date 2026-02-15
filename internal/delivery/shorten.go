@@ -10,6 +10,7 @@ import (
 
 	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/internal/usecase"
+	"github.com/georgg2003/shortener/pkg/utils"
 )
 
 var (
@@ -24,7 +25,7 @@ func validateURL(longURL string) error {
 	parsedURL, parseErr := url.Parse(longURL)
 
 	if parseErr != nil {
-		return errors.Join(parseErr, errInvalidURL)
+		return utils.ErrWrap(parseErr, errInvalidURL.Error())
 	}
 	if parsedURL.Scheme == "" {
 		return errInvalidURLScheme
@@ -38,7 +39,7 @@ func validateURL(longURL string) error {
 
 // Ручка сокращения URL.
 func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer d.safeClose(r.Body)
 	ctx := r.Context()
 
 	bytes, err := io.ReadAll(r.Body)
@@ -50,7 +51,8 @@ func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	longURL := string(bytes)
 
 	if err = validateURL(longURL); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		d.logger.WithError(err).Error("invalid url")
+		http.Error(w, "Invalid url", http.StatusBadRequest)
 		return
 	}
 
@@ -61,7 +63,7 @@ func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(shortURL)))
 
 	if errors.Is(err, usecase.ErrURLEntityAlreadyExists) {
@@ -69,19 +71,21 @@ func (d *delivery) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusCreated)
 	}
-	w.Write([]byte(shortURL))
+	if _, err = w.Write([]byte(shortURL)); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // API ручка для сокращения URL.
 func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer d.safeClose(r.Body)
 	ctx := r.Context()
 
 	var req models.APIShortenURLRequest
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&req); err != nil {
-		e := errors.Join(err, errDecodeBody)
+		e := utils.ErrWrap(err, errDecodeBody.Error())
 		http.Error(w, e.Error(), http.StatusBadRequest)
 		return
 	}
@@ -102,7 +106,7 @@ func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 		Result: shortURL,
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json")
 	if errors.Is(err, usecase.ErrURLEntityAlreadyExists) {
 		w.WriteHeader(http.StatusConflict)
 	} else {
@@ -118,7 +122,7 @@ func (d *delivery) APIShortenURL(w http.ResponseWriter, r *http.Request) {
 
 // API ручка для сокращения нескольких URL.
 func (d *delivery) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer d.safeClose(r.Body)
 	ctx := r.Context()
 
 	var req models.APIShortenURLBatchRequest
@@ -158,7 +162,7 @@ func (d *delivery) APIShortenURLBatch(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json")
 	if errors.Is(err, usecase.ErrURLEntityAlreadyExists) {
 		w.WriteHeader(http.StatusConflict)
 	} else {
