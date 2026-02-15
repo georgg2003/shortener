@@ -9,7 +9,7 @@ import (
 
 // Ручка, возвращающая все URL, сокращенные пользователем.
 func (d *delivery) GetUserURLs(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer d.safeClose(r.Body)
 
 	ctx := r.Context()
 
@@ -33,7 +33,7 @@ func (d *delivery) GetUserURLs(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
 	encoder := json.NewEncoder(w)

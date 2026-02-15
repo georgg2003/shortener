@@ -64,7 +64,10 @@ func newConfig(logger *logrus.Logger) *config.Config {
 	if err := conf.ReadFromFlags(fs); err != nil {
 		logger.WithError(err).Fatal("failed to read config from flags")
 	}
-	fs.Parse(os.Args[1:])
+	err := fs.Parse(os.Args[1:])
+	if err != nil {
+		logger.WithError(err).Fatal("failed to parse os args")
+	}
 
 	return conf
 }
@@ -102,7 +105,7 @@ func main() {
 
 	auditLogger := logger.WithField("subsystem", "audit")
 	auditRepos := newAuditRepos(conf, auditLogger)
-	observer := audit.NewAuditObserver(auditRepos)
+	observer := audit.NewAuditObserver(auditRepos, auditLogger)
 
 	// Удаляет обсервер после завершения main
 	defer usecase.Observe("audit", observer)()

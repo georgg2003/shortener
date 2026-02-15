@@ -80,7 +80,7 @@ func TestGetUserUrls(t *testing.T) {
 	require.NoError(t, err, errHTTPReqText)
 
 	var jsonBody models.APIUserURLsResponse
-	json.Unmarshal(req.Body(), &jsonBody)
+	require.NoError(t, json.Unmarshal(req.Body(), &jsonBody))
 
 	assert.Len(t, jsonBody, 1)
 	url := jsonBody[0]

@@ -2,13 +2,11 @@ package middlewares
 
 import (
 	"compress/gzip"
-	"errors"
 	"net/http"
 	"strings"
-)
 
-var (
-	errGzipReaderInit = errors.New("failed to init a gzip reader")
+	"github.com/georgg2003/shortener/pkg/utils"
+	"github.com/sirupsen/logrus"
 )
 
 var compressableContentTypes = []string{"application/json", "text/html"}
@@ -52,7 +50,7 @@ func (w gzipWriter) Close() error {
 // Мидлваря для работы с gzip сжатием.
 // Расжимает тело запроса при наличии соответствующего заголовка Content-Encoding.
 // Сжимает тело ответа при наличии соответствующего заголовка Accept-Encoding.
-func NewGzipCompressionMiddleware() func(h http.Handler) http.Handler {
+func NewGzipCompressionMiddleware(l logrus.FieldLogger) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
@@ -61,18 +59,18 @@ func NewGzipCompressionMiddleware() func(h http.Handler) http.Handler {
 					gz:             gzip.NewWriter(w),
 				}
 				w = gz
-				defer gz.Close()
+				defer utils.SafeClose(gz, l)
 			}
 
 			if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 				reader, err := gzip.NewReader(r.Body)
 				if err != nil {
-					e := errors.Join(err, errGzipReaderInit)
+					e := utils.ErrWrap(err, "failed to init a gzip reader")
 					http.Error(w, e.Error(), http.StatusInternalServerError)
 					return
 				}
 				r.Body = reader
-				defer reader.Close()
+				defer utils.SafeClose(reader, l)
 			}
 
 			h.ServeHTTP(w, r)

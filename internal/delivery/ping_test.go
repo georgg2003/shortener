@@ -38,7 +38,7 @@ func TestPing(t *testing.T) {
 				},
 			},
 			StatusCode: http.StatusInternalServerError,
-			Response:   []byte("ping failed"),
+			Response:   []byte("ping failed\n"),
 		},
 	}
 	for tc := range slices.Values(testCases) {

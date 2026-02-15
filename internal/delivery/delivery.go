@@ -2,6 +2,7 @@
 package delivery
 
 import (
+	"io"
 	"net/http"
 
 	"github.com/georgg2003/shortener/internal/config"
@@ -26,13 +27,13 @@ type Delivery interface {
 
 type delivery struct {
 	usecase usecase.UseCase
-	logger  *logrus.Logger
+	logger  logrus.FieldLogger
 	cfg     *config.Config
 }
 
 func New(
 	usecase usecase.UseCase,
-	logger *logrus.Logger,
+	logger logrus.FieldLogger,
 	cfg *config.Config,
 ) Delivery {
 	return &delivery{
@@ -47,7 +48,7 @@ func (d *delivery) GetNewRouter() chi.Router {
 
 	r.Use(
 		middlewares.NewAccessLogMiddleware(d.logger),
-		middlewares.NewGzipCompressionMiddleware(),
+		middlewares.NewGzipCompressionMiddleware(d.logger),
 	)
 
 	if d.cfg.DataBaseDSN != "" {
@@ -64,4 +65,10 @@ func (d *delivery) GetNewRouter() chi.Router {
 	r.Get("/ping", d.Ping)
 
 	return r
+}
+
+func (d *delivery) safeClose(closer io.Closer) {
+	if err := closer.Close(); err != nil {
+		d.logger.WithError(err).Error("failed to close")
+	}
 }
