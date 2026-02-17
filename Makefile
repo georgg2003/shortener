@@ -12,7 +12,11 @@ GO := go
 GOFLAGS :=
 GOMOD := $(shell go env GOMOD)
 GOPATH := $(shell go env GOPATH)
+SHORTENER_PKG = ./cmd/shortener/main.go
 PKG := ./...
+BUILD_VER = v0.1
+BUILD_DATE := $(shell date +"%Y/%m/%d %H:%M:%S")
+BUILD_COMMIT := $(shell git rev-parse --short HEAD)
 
 export PATH := $(GOPATH)/bin:$(PATH)
 export AUDIT_STUB_ENABLED=1
@@ -39,9 +43,12 @@ tidyvendor:
 ## Build & Run
 ## ---------------------------
 
-build:
-	$(GO) build -o bin/$(BINARY) $(PKG)
-
+build:	
+	$(GO) build -o bin/$(BINARY) \
+		-ldflags "-X 'main.buildVersion=$(BUILD_VER)' \
+		          -X 'main.buildDate=$(BUILD_DATE)' \
+		          -X 'main.buildCommit=$(BUILD_COMMIT)'" \
+		$(SHORTENER_PKG)
 run:
 	$(GO) run $(PKG) -d $(DB_URL)
 

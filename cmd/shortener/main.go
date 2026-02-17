@@ -27,6 +27,12 @@ import (
 	"github.com/georgg2003/shortener/internal/usecase/audit"
 )
 
+var (
+	buildVersion string = "N/A"
+	buildDate    string = "N/A"
+	buildCommit  string = "N/A"
+)
+
 func newAuditRepos(cfg *config.Config, logger *logrus.Entry) []audit_repo.AuditRepository {
 	repos := make([]audit_repo.AuditRepository, 0)
 	if cfg.AuditFile != "" {
@@ -91,6 +97,12 @@ func listenShutdown(ctx context.Context, server *http.Server, logger *logrus.Log
 	}
 }
 
+func printBuildInfo(logger logrus.FieldLogger) {
+	logger.Infof("Build version: %s", buildVersion)
+	logger.Infof("Build date: %s", buildDate)
+	logger.Infof("Build commit: %s", buildCommit)
+}
+
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -126,6 +138,8 @@ func main() {
 		g.Go(listen(debugServer, logger))
 		g.Go(listenShutdown(ctx, debugServer, logger))
 	}
+
+	printBuildInfo(logger)
 
 	if err := g.Wait(); err != nil {
 		logger.WithError(err).Fatal("application stopped with error")
