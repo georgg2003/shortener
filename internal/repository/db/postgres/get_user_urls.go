@@ -7,7 +7,7 @@ import (
 	"github.com/georgg2003/shortener/pkg/utils"
 )
 
-const USER_URLS_LIMIT = 100
+const UserURLsLimit = 100
 
 func (r *repository) GetUserURLs(ctx context.Context, userID int64) ([]models.URLEntity, error) {
 	conn, err := r.db.Acquire(ctx)
@@ -22,12 +22,12 @@ func (r *repository) GetUserURLs(ctx context.Context, userID int64) ([]models.UR
 		FROM url_entity
 		WHERE user_id = $1
 		LIMIT $2
-	`, userID, USER_URLS_LIMIT)
+	`, userID, UserURLsLimit)
 	if err != nil {
 		return nil, utils.ErrWrap(err, "failed to get user urls")
 	}
 
-	arr := make([]models.URLEntity, 0, USER_URLS_LIMIT)
+	arr := make([]models.URLEntity, 0, UserURLsLimit)
 	for rows.Next() {
 		var entity models.URLEntity
 		if err = rows.Scan(&entity.OriginalURL, &entity.ShortID); err != nil {
