@@ -33,7 +33,7 @@ func (r *repository) GetShortIDsBatch(ctx context.Context, entities []*models.UR
 	m := make(map[string]string)
 	for rows.Next() {
 		var orig, shortID string
-		if err := rows.Scan(&orig, &shortID); err != nil {
+		if err = rows.Scan(&orig, &shortID); err != nil {
 			return nil, err
 		}
 		m[orig] = shortID

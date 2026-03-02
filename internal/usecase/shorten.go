@@ -25,15 +25,17 @@ func (uc *useCase) shortURLFromID(shortID string) string {
 var errFailedToGetShortID = errors.New("failed to get short id")
 
 func (uc *useCase) NewShortURL(ctx context.Context, url string) (string, error) {
-	shortID := uc.base62Gen.Generate(shortIDLength)
+	shortID, err := uc.base62Gen.Generate(shortIDLength)
+	if err != nil {
+		return "", utils.ErrWrap(err, "failed to generate short ID")
+	}
 	userID, _ := contextlib.GetUserID(ctx)
-	err := uc.repository.NewShortURL(ctx, url, shortID)
+	err = uc.repository.NewShortURL(ctx, url, shortID)
 	if err != nil {
 		if postgres.IsUniqueViolation(err) {
 			shortID, err = uc.repository.GetShortID(ctx, url)
 			if err != nil {
-				utils.ErrWrap(err, errFailedToGetShortID.Error())
-				return "", err
+				return "", utils.ErrWrap(err, errFailedToGetShortID.Error())
 			}
 			err = ErrURLEntityAlreadyExists
 		} else {
@@ -57,7 +59,10 @@ var errFailedToGetShortIDsBatch = errors.New("failed to get short ids batch")
 
 func (uc *useCase) NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error {
 	for _, v := range entities {
-		shortID := uc.base62Gen.Generate(shortIDLength)
+		shortID, err := uc.base62Gen.Generate(shortIDLength)
+		if err != nil {
+			return utils.ErrWrap(err, "failed to generate short ID")
+		}
 		v.ShortID = shortID
 		v.ShortURL = uc.shortURLFromID(shortID)
 	}

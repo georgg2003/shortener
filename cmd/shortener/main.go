@@ -27,6 +27,12 @@ import (
 	"github.com/georgg2003/shortener/internal/usecase/audit"
 )
 
+var (
+	buildVersion string = "N/A"
+	buildDate    string = "N/A"
+	buildCommit  string = "N/A"
+)
+
 func newAuditRepos(cfg *config.Config, logger *logrus.Entry) []audit_repo.AuditRepository {
 	repos := make([]audit_repo.AuditRepository, 0)
 	if cfg.AuditFile != "" {
@@ -64,7 +70,10 @@ func newConfig(logger *logrus.Logger) *config.Config {
 	if err := conf.ReadFromFlags(fs); err != nil {
 		logger.WithError(err).Fatal("failed to read config from flags")
 	}
-	fs.Parse(os.Args[1:])
+	err := fs.Parse(os.Args[1:])
+	if err != nil {
+		logger.WithError(err).Fatal("failed to parse os args")
+	}
 
 	return conf
 }
@@ -88,6 +97,12 @@ func listenShutdown(ctx context.Context, server *http.Server, logger *logrus.Log
 	}
 }
 
+func printBuildInfo(logger logrus.FieldLogger) {
+	logger.Infof("Build version: %s", buildVersion)
+	logger.Infof("Build date: %s", buildDate)
+	logger.Infof("Build commit: %s", buildCommit)
+}
+
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -102,7 +117,7 @@ func main() {
 
 	auditLogger := logger.WithField("subsystem", "audit")
 	auditRepos := newAuditRepos(conf, auditLogger)
-	observer := audit.NewAuditObserver(auditRepos)
+	observer := audit.NewAuditObserver(auditRepos, auditLogger)
 
 	// Удаляет обсервер после завершения main
 	defer usecase.Observe("audit", observer)()
@@ -123,6 +138,8 @@ func main() {
 		g.Go(listen(debugServer, logger))
 		g.Go(listenShutdown(ctx, debugServer, logger))
 	}
+
+	printBuildInfo(logger)
 
 	if err := g.Wait(); err != nil {
 		logger.WithError(err).Fatal("application stopped with error")

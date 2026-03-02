@@ -7,6 +7,8 @@ import (
 	"github.com/georgg2003/shortener/pkg/utils"
 )
 
+const UserURLsLimit = 100
+
 func (r *repository) GetUserURLs(ctx context.Context, userID int64) ([]models.URLEntity, error) {
 	conn, err := r.db.Acquire(ctx)
 	if err != nil {
@@ -15,29 +17,20 @@ func (r *repository) GetUserURLs(ctx context.Context, userID int64) ([]models.UR
 	}
 	defer conn.Release()
 
-	var count int
-	err = conn.QueryRow(ctx,
-		`SELECT count(*) FROM url_entity WHERE user_id = $1`,
-		userID,
-	).Scan(&count)
-	if err != nil {
-		return nil, utils.ErrWrap(err, "failed to get urls count")
-	}
-
 	rows, err := conn.Query(ctx, `
 		SELECT original_url, short_id
 		FROM url_entity
 		WHERE user_id = $1
-		LIMIT 1000
-	`, userID)
+		LIMIT $2
+	`, userID, UserURLsLimit)
 	if err != nil {
 		return nil, utils.ErrWrap(err, "failed to get user urls")
 	}
 
-	arr := make([]models.URLEntity, 0, count)
+	arr := make([]models.URLEntity, 0, UserURLsLimit)
 	for rows.Next() {
 		var entity models.URLEntity
-		if err := rows.Scan(&entity.OriginalURL, &entity.ShortID); err != nil {
+		if err = rows.Scan(&entity.OriginalURL, &entity.ShortID); err != nil {
 			return nil, err
 		}
 		arr = append(arr, entity)
