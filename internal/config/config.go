@@ -20,6 +20,7 @@ type Config struct {
 	AuditURL         string `mapstructure:"audit_url" env:"AUDIT_URL" flag:"audit-url" flag_usage:"url to send audit logs"`
 	AuditStubEnabled bool   `mapstructure:"audit_stub_enabled" env:"AUDIT_STUB_ENABLED"`
 	DebugAddr        string `mapstructure:"debug_addr" env:"DEBUG_ADDR" flag:"debug-addr" flag_usage:"debug listen addres"`
+	EnableHTTPS      bool   `mapstructure:"enable_https" env:"ENABLE_HTTPS" flag:"s" flag_usage:"enabled https"`
 }
 
 func New() *Config {
