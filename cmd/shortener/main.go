@@ -83,7 +83,13 @@ func newConfig(logger *logrus.Logger) *config.Config {
 func listen(server *http.Server, logger *logrus.Logger) func() error {
 	return func() error {
 		logger.Infof("Listening on %v", server.Addr)
-		if err := server.ListenAndServeTLS("", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		var err error
+		if server.TLSConfig != nil {
+			err = server.ListenAndServeTLS("", "")
+		} else {
+			err = server.ListenAndServe()
+		}
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.WithError(err).Error("server failed")
 			return err
 		}
