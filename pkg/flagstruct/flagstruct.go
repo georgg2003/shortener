@@ -35,13 +35,19 @@ func ReadFromFlags(fs *flag.FlagSet, c any) error {
 			continue
 		}
 
-		if field.Type.Kind() != reflect.String {
-			return fmt.Errorf("field %s must be string", field.Name)
+		switch field.Type.Kind() {
+		case reflect.String:
+			fieldPtr := v.Field(i).Addr().Interface().(*string)
+			fs.StringVar(fieldPtr, flagName, *fieldPtr, field.Tag.Get("flag_usage"))
+		case reflect.Bool:
+			fieldPtr := v.Field(i).Addr().Interface().(*bool)
+			fs.BoolVar(fieldPtr, flagName, *fieldPtr, field.Tag.Get("flag_usage"))
+		case reflect.Int:
+			fieldPtr := v.Field(i).Addr().Interface().(*int)
+			fs.IntVar(fieldPtr, flagName, *fieldPtr, field.Tag.Get("flag_usage"))
+		default:
+			return fmt.Errorf("field %s must be string, bool or int", field.Name)
 		}
-
-		fieldPtr := v.Field(i).Addr().Interface().(*string)
-
-		fs.StringVar(fieldPtr, flagName, *fieldPtr, field.Tag.Get("flag_usage"))
 	}
 
 	return nil

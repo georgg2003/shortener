@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"flag"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/georgg2003/shortener/internal/config"
@@ -81,7 +83,13 @@ func newConfig(logger *logrus.Logger) *config.Config {
 func listen(server *http.Server, logger *logrus.Logger) func() error {
 	return func() error {
 		logger.Infof("Listening on %v", server.Addr)
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		var err error
+		if server.TLSConfig != nil {
+			err = server.ListenAndServeTLS("", "")
+		} else {
+			err = server.ListenAndServe()
+		}
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.WithError(err).Error("server failed")
 			return err
 		}
@@ -126,7 +134,17 @@ func main() {
 
 	r := delivery.GetNewRouter()
 
-	server := &http.Server{Addr: conf.ListenAddr, Handler: r}
+	var tlsConfig *tls.Config
+	if conf.EnableHTTPS {
+		manager := &autocert.Manager{
+			Cache:      autocert.DirCache("cache-dir"),
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist("localhost"),
+		}
+		tlsConfig = manager.TLSConfig()
+	}
+
+	server := &http.Server{Addr: conf.ListenAddr, Handler: r, TLSConfig: tlsConfig}
 
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -134,7 +152,7 @@ func main() {
 	g.Go(listenShutdown(ctx, server, logger))
 
 	if conf.DebugAddr != "" {
-		debugServer := &http.Server{Addr: conf.DebugAddr}
+		debugServer := &http.Server{Addr: conf.DebugAddr, TLSConfig: tlsConfig}
 		g.Go(listen(debugServer, logger))
 		g.Go(listenShutdown(ctx, debugServer, logger))
 	}
