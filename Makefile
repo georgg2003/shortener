@@ -50,7 +50,7 @@ build:
 		          -X 'main.buildCommit=$(BUILD_COMMIT)'" \
 		$(SHORTENER_PKG)
 run:
-	$(GO) run $(PKG) -d $(DB_URL) -s --config ./config/config.json
+	$(GO) run $(PKG) -d $(DB_URL) --config ./config/config.json
 
 clean:
 	rm -rf bin
