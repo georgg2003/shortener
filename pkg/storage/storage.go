@@ -34,7 +34,7 @@ func (s *SyncMapStorage) Store(key, value any) {
 func (s *SyncMapStorage) recoverFromFile() {
 	file, err := os.Open(s.cfg.FileStoragePath)
 	if os.IsNotExist(err) {
-		s.logger.WithError(err).Info("file does not exist")
+		s.logger.WithError(err).Infof("file %s does not exist", s.cfg.FileStoragePath)
 		return
 	}
 	if err != nil {

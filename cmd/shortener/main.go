@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
-	"flag"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -62,24 +61,6 @@ func newRepo(ctx context.Context, conf *config.Config, logger *logrus.Logger) db
 	}
 }
 
-func newConfig(logger *logrus.Logger) *config.Config {
-	conf := config.New()
-	if err := conf.ReadFromEnv(); err != nil {
-		logger.WithError(err).Fatal("failed to read config from env")
-	}
-
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	if err := conf.ReadFromFlags(fs); err != nil {
-		logger.WithError(err).Fatal("failed to read config from flags")
-	}
-	err := fs.Parse(os.Args[1:])
-	if err != nil {
-		logger.WithError(err).Fatal("failed to parse os args")
-	}
-
-	return conf
-}
-
 func listen(server *http.Server, logger *logrus.Logger) func() error {
 	return func() error {
 		logger.Infof("Listening on %v", server.Addr)
@@ -119,7 +100,10 @@ func main() {
 	logger.SetFormatter(&logrus.JSONFormatter{})
 	logger.SetLevel(logrus.DebugLevel)
 
-	conf := newConfig(logger)
+	conf, err := config.Load()
+	if err != nil {
+		logger.WithError(err).Fatal("failed to load config")
+	}
 	repo := newRepo(ctx, conf, logger)
 	usecase := usecase.New(repo, conf, logger)
 
