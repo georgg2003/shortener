@@ -2,6 +2,7 @@
 package storage
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"sync"
@@ -62,44 +63,50 @@ func (s *SyncMapStorage) recoverFromFile() {
 	s.logger.Infof("successfully recovered data from file, rows: %d", len(tmp))
 }
 
-func (s *SyncMapStorage) syncWorker() {
-	for range s.saveCh {
-		if s.cfg.DebounceDuration != nil {
-			duration := *s.cfg.DebounceDuration
-			time.Sleep(duration)
-		}
-
-		tmp := make([]models.ShortURL, 0)
-
-		s.Map.Range(func(key, value any) bool {
-			v, ok := value.(models.ShortURL)
-			if ok {
-				tmp = append(tmp, v)
+func (s *SyncMapStorage) syncWorker(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-s.saveCh:
+			if s.cfg.DebounceDuration != nil {
+				duration := *s.cfg.DebounceDuration
+				time.Sleep(duration)
 			}
-			return true
-		})
 
-		bytes, err := json.MarshalIndent(tmp, "", "  ")
-		if err != nil {
-			s.logger.WithError(err).Error("failed marshal data")
-			continue
+			tmp := make([]models.ShortURL, 0)
+
+			s.Map.Range(func(key, value any) bool {
+				v, ok := value.(models.ShortURL)
+				if ok {
+					tmp = append(tmp, v)
+				}
+				return true
+			})
+
+			bytes, err := json.MarshalIndent(tmp, "", "  ")
+			if err != nil {
+				s.logger.WithError(err).Error("failed marshal data")
+				continue
+			}
+
+			err = os.WriteFile(s.cfg.FileStoragePath, bytes, 0666)
+			if err != nil {
+				s.logger.WithError(err).Error("failed to write data to file")
+			}
+
+			s.logger.WithFields(
+				logrus.Fields{
+					"file_path": s.cfg.FileStoragePath,
+					"bytes":     len(bytes),
+				},
+			).Infof("successfully written data to file storage")
 		}
-
-		err = os.WriteFile(s.cfg.FileStoragePath, bytes, 0666)
-		if err != nil {
-			s.logger.WithError(err).Error("failed to write data to file")
-		}
-
-		s.logger.WithFields(
-			logrus.Fields{
-				"file_path": s.cfg.FileStoragePath,
-				"bytes":     len(bytes),
-			},
-		).Infof("successfully written data to file storage")
 	}
 }
 
 func New(
+	ctx context.Context,
 	cfg *SyncStorageConfig,
 	logger logrus.FieldLogger,
 ) *SyncMapStorage {
@@ -111,7 +118,7 @@ func New(
 		logger: logger,
 	}
 	store.recoverFromFile()
-	go store.syncWorker()
+	go store.syncWorker(ctx)
 
 	return &store
 }

@@ -14,7 +14,7 @@ func (uc *useCase) ProcessShortURL(ctx context.Context, id string) (string, bool
 
 	if uc.observersByID != nil && err == nil {
 		for observer := range maps.Values(uc.observersByID) {
-			observer.OnGetURL(ObserverEvent{
+			observer.OnGetURL(ctx, ObserverEvent{
 				Time:        time.Now(),
 				UserID:      userID,
 				OriginalURL: longURL,

@@ -1,6 +1,8 @@
 package stub
 
 import (
+	"context"
+
 	"github.com/georgg2003/shortener/internal/repository/audit"
 	"github.com/sirupsen/logrus"
 )
@@ -9,7 +11,7 @@ type auditStub struct {
 	logger *logrus.Entry
 }
 
-func (s *auditStub) WriteLog(log audit.AuditLog) error {
+func (s *auditStub) WriteLog(ctx context.Context, log audit.AuditLog) error {
 	s.logger.WithField("log", log).Info("audit WriteLog called")
 	return nil
 }

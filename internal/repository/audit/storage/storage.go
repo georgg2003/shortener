@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -17,7 +18,7 @@ type auditFileRepository struct {
 	mu       sync.RWMutex
 }
 
-func (repo *auditFileRepository) WriteLog(log audit.AuditLog) error {
+func (repo *auditFileRepository) WriteLog(ctx context.Context, log audit.AuditLog) error {
 	data, err := json.Marshal(log)
 	if err != nil {
 		repo.logger.Error()

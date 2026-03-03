@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -93,7 +92,7 @@ func printBuildInfo(logger logrus.FieldLogger) {
 }
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	defer stop()
 
 	logger := logrus.New()
