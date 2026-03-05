@@ -24,7 +24,7 @@ func New(
 ) *repository {
 	store := storage.New(
 		ctx,
-		&storage.SyncStorageConfig{
+		storage.SyncStorageConfig{
 			FileStoragePath: cfg.FileStoragePath,
 		},
 		logger,

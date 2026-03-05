@@ -60,7 +60,7 @@ clean:
 ## ---------------------------
 
 test:
-	$(GO) test $(PKG) -cover -v
+	$(GO) test ./... -cover -v
 
 coverage: 
 	$(GO) test $(PKG) -covermode=count -coverpkg=$(PKG) -coverprofile=coverage.out
