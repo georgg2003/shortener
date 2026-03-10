@@ -92,9 +92,6 @@ func printBuildInfo(logger logrus.FieldLogger) {
 }
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	defer stop()
-
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{})
 	logger.SetLevel(logrus.DebugLevel)
@@ -103,6 +100,10 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatal("failed to load config")
 	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	defer stop()
+
 	repo := newRepo(ctx, conf, logger)
 	usecase := usecase.New(repo, conf, logger)
 

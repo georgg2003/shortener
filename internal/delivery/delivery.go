@@ -64,6 +64,11 @@ func (d *delivery) GetNewRouter() chi.Router {
 	r.Get("/{id}", d.ProcessShortURL)
 	r.Get("/ping", d.Ping)
 
+	r.Route("/api/internal", func(r chi.Router) {
+		r.Use(middlewares.NewACLMiddleware(d.cfg, d.logger))
+		r.Get("/stats", d.InternalStats)
+	})
+
 	return r
 }
 

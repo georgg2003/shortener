@@ -75,3 +75,8 @@ type APIUserURLsResponse []APIUserURLsResponseRecord
 // Тело запроса в API ручку для удаления URL пользователя.
 // Список сокращенных ID.
 type APIDeleteUserURLsRequest []string
+
+type APIInternalStatsResponse struct {
+	URLsCount  int64 `json:"urls"`
+	UsersCount int64 `json:"users"`
+}

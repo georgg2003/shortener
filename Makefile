@@ -63,7 +63,7 @@ test:
 	$(GO) test ./... -cover -v
 
 coverage: 
-	$(GO) test $(PKG) -covermode=count -coverpkg=$(PKG) -coverprofile=coverage.out
+	$(GO) test ./internal/... ./pkg/... -covermode=count -coverpkg=./... -coverprofile=coverage.out
 	grep -vE "(mock\.go|/mock/|/*.gen.go|/testutils/)" coverage.out > coverage.filtered.out
 	mv coverage.filtered.out coverage.out
 	$(GO) tool cover -func=coverage.out
@@ -76,7 +76,7 @@ lint:
 ## ---------------------------
 
 generate:
-	$(GO) generate $(PKG)
+	$(GO) generate ./...
 
 gen-reset:
 	$(GO) go run ./cmd/reset/main.go $(PKG)
