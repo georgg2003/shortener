@@ -100,7 +100,7 @@ func New() *Config {
 		FileStoragePath:  "",
 		DataBaseDSN:      "",
 		JWTSecretKey:     "secret_key",
-		TrustedSubnetStr: "127.0.0.1/24",
+		TrustedSubnetStr: "127.0.0.1/32",
 	}
 }
 

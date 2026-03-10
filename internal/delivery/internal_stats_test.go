@@ -6,9 +6,9 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/georgg2003/shortener/internal/delivery"
 	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/internal/pkg/testutils"
+	"github.com/georgg2003/shortener/pkg/middlewares"
 	"github.com/go-resty/resty/v2"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -36,7 +36,7 @@ func TestInternalStats(t *testing.T) {
 				Method: http.MethodGet,
 				Path:   statsPath,
 				ModifyRequstFunc: func(req *resty.Request) {
-					req.SetHeader(delivery.RealIPHeaderName, "127.0.0.1")
+					req.SetHeader(middlewares.RealIPHeaderName, "127.0.0.1")
 				},
 				MockFunc: func(t testutils.TestReporter, ts *testutils.TestServer) {
 					server.Repo.EXPECT().GetStats(gomock.Any()).Return(models.Stats{
@@ -54,7 +54,7 @@ func TestInternalStats(t *testing.T) {
 				Method: http.MethodGet,
 				Path:   statsPath,
 				ModifyRequstFunc: func(req *resty.Request) {
-					req.SetHeader(delivery.RealIPHeaderName, "127.32.19.15")
+					req.SetHeader(middlewares.RealIPHeaderName, "127.32.19.15")
 				},
 			},
 			Response:   []byte(""),
@@ -66,7 +66,7 @@ func TestInternalStats(t *testing.T) {
 				Method: http.MethodGet,
 				Path:   statsPath,
 				ModifyRequstFunc: func(req *resty.Request) {
-					req.SetHeader(delivery.RealIPHeaderName, "127.0.0.1")
+					req.SetHeader(middlewares.RealIPHeaderName, "127.0.0.1")
 				},
 				MockFunc: func(t testutils.TestReporter, ts *testutils.TestServer) {
 					server.Repo.EXPECT().GetStats(gomock.Any()).Return(models.Stats{}, testutils.ErrSomeError)

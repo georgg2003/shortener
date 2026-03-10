@@ -2,22 +2,12 @@ package delivery
 
 import (
 	"encoding/json"
-	"net"
 	"net/http"
 
 	"github.com/georgg2003/shortener/internal/models"
 )
 
-const RealIPHeaderName = "X-Real-IP"
-
 func (d delivery) InternalStats(w http.ResponseWriter, r *http.Request) {
-	subnet := d.cfg.TrustedSubnet
-	realIP := net.ParseIP(r.Header.Get(RealIPHeaderName))
-	if subnet == nil || realIP == nil || !subnet.Contains(realIP) {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
 	ctx := r.Context()
 	stats, err := d.usecase.GetStats(ctx)
 	if err != nil {

@@ -33,7 +33,7 @@ func (r *repository) GetStats(ctx context.Context) (models.Stats, error) {
 
 	return models.Stats{
 		URLsCount:  urlsCount,
-		UsersCount: urlsCount,
+		UsersCount: usersCount,
 	}, nil
 }
 
