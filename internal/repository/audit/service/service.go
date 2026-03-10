@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"slices"
 	"time"
 
@@ -15,13 +16,13 @@ type auditServiceRepository struct {
 	client *resty.Client
 }
 
-func (repo *auditServiceRepository) WriteLog(log audit.AuditLog) error {
+func (repo *auditServiceRepository) WriteLog(ctx context.Context, log audit.AuditLog) error {
 	repo.logger.WithFields(logrus.Fields{
 		"log":  log,
 		"addr": repo.addr,
 	}).Info("writing audit log into service")
 
-	_, err := repo.client.R().SetBody(log).Post("")
+	_, err := repo.client.R().SetContext(ctx).SetBody(log).Post("")
 	return err
 }
 

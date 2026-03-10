@@ -1,6 +1,7 @@
 package audit
 
 import (
+	"context"
 	"slices"
 	"strconv"
 
@@ -26,20 +27,20 @@ func convertEventToLog(ev usecase.ObserverEvent, action string) audit_repo.Audit
 	}
 }
 
-func (obs *AuditObserver) OnNewURL(ev usecase.ObserverEvent) {
+func (obs *AuditObserver) OnNewURL(ctx context.Context, ev usecase.ObserverEvent) {
 	for repo := range slices.Values(obs.repositories) {
 		go func() {
-			if err := repo.WriteLog(convertEventToLog(ev, NewURLAction)); err != nil {
+			if err := repo.WriteLog(ctx, convertEventToLog(ev, NewURLAction)); err != nil {
 				obs.logger.WithError(err).Error("failed to write new url log")
 			}
 		}()
 	}
 }
 
-func (obs *AuditObserver) OnGetURL(ev usecase.ObserverEvent) {
+func (obs *AuditObserver) OnGetURL(ctx context.Context, ev usecase.ObserverEvent) {
 	for repo := range slices.Values(obs.repositories) {
 		go func() {
-			if err := repo.WriteLog(convertEventToLog(ev, FollowURLAction)); err != nil {
+			if err := repo.WriteLog(ctx, convertEventToLog(ev, FollowURLAction)); err != nil {
 				obs.logger.WithError(err).Error("failed to write follow url log")
 			}
 		}()

@@ -23,7 +23,8 @@ func New(
 	logger *logrus.Logger,
 ) *repository {
 	store := storage.New(
-		&storage.SyncStorageConfig{
+		ctx,
+		storage.SyncStorageConfig{
 			FileStoragePath: cfg.FileStoragePath,
 		},
 		logger,

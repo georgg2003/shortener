@@ -2,6 +2,7 @@
 package storage
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"sync"
@@ -14,13 +15,13 @@ import (
 type SyncMapStorage struct {
 	sync.Map
 	saveCh chan struct{}
-	cfg    *SyncStorageConfig
+	cfg    SyncStorageConfig
 	logger logrus.FieldLogger
 }
 
 type SyncStorageConfig struct {
-	FileStoragePath  string
-	DebounceDuration *time.Duration
+	FileStoragePath string
+	FlushInterval   time.Duration
 }
 
 func (s *SyncMapStorage) Store(key, value any) {
@@ -34,7 +35,7 @@ func (s *SyncMapStorage) Store(key, value any) {
 func (s *SyncMapStorage) recoverFromFile() {
 	file, err := os.Open(s.cfg.FileStoragePath)
 	if os.IsNotExist(err) {
-		s.logger.WithError(err).Info("file does not exist")
+		s.logger.WithError(err).Infof("file %s does not exist", s.cfg.FileStoragePath)
 		return
 	}
 	if err != nil {
@@ -62,45 +63,73 @@ func (s *SyncMapStorage) recoverFromFile() {
 	s.logger.Infof("successfully recovered data from file, rows: %d", len(tmp))
 }
 
-func (s *SyncMapStorage) syncWorker() {
-	for range s.saveCh {
-		if s.cfg.DebounceDuration != nil {
-			duration := *s.cfg.DebounceDuration
-			time.Sleep(duration)
+func (s *SyncMapStorage) flush() {
+	tmp := make([]models.ShortURL, 0)
+
+	s.Map.Range(func(key, value any) bool {
+		v, ok := value.(models.ShortURL)
+		if ok {
+			tmp = append(tmp, v)
 		}
+		return true
+	})
 
-		tmp := make([]models.ShortURL, 0)
+	bytes, err := json.MarshalIndent(tmp, "", "  ")
+	if err != nil {
+		s.logger.WithError(err).Error("failed marshal data")
+		return
+	}
 
-		s.Map.Range(func(key, value any) bool {
-			v, ok := value.(models.ShortURL)
-			if ok {
-				tmp = append(tmp, v)
+	err = os.WriteFile(s.cfg.FileStoragePath, bytes, 0666)
+	if err != nil {
+		s.logger.WithError(err).Error("failed to write data to file")
+		return
+	}
+
+	s.logger.WithFields(
+		logrus.Fields{
+			"file_path": s.cfg.FileStoragePath,
+			"bytes":     len(bytes),
+		},
+	).Infof("successfully written data to file storage")
+}
+
+func (s *SyncMapStorage) syncWorker(ctx context.Context) {
+	var ticker *time.Ticker
+	var tickerCh <-chan time.Time
+	if s.cfg.FlushInterval > 0 {
+		ticker = time.NewTicker(s.cfg.FlushInterval)
+		defer ticker.Stop()
+		tickerCh = ticker.C
+	}
+
+	dirty := false
+
+	for {
+		select {
+		case <-ctx.Done():
+			if dirty {
+				s.flush()
 			}
-			return true
-		})
-
-		bytes, err := json.MarshalIndent(tmp, "", "  ")
-		if err != nil {
-			s.logger.WithError(err).Error("failed marshal data")
-			continue
+			return
+		case <-s.saveCh:
+			if ticker == nil {
+				s.flush()
+				continue
+			}
+			dirty = true
+		case <-tickerCh:
+			if dirty {
+				s.flush()
+				dirty = false
+			}
 		}
-
-		err = os.WriteFile(s.cfg.FileStoragePath, bytes, 0666)
-		if err != nil {
-			s.logger.WithError(err).Error("failed to write data to file")
-		}
-
-		s.logger.WithFields(
-			logrus.Fields{
-				"file_path": s.cfg.FileStoragePath,
-				"bytes":     len(bytes),
-			},
-		).Infof("successfully written data to file storage")
 	}
 }
 
 func New(
-	cfg *SyncStorageConfig,
+	ctx context.Context,
+	cfg SyncStorageConfig,
 	logger logrus.FieldLogger,
 ) *SyncMapStorage {
 	saveCh := make(chan struct{}, 1)
@@ -111,7 +140,7 @@ func New(
 		logger: logger,
 	}
 	store.recoverFromFile()
-	go store.syncWorker()
+	go store.syncWorker(ctx)
 
 	return &store
 }

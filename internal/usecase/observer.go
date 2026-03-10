@@ -1,6 +1,9 @@
 package usecase
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type ObserverEvent struct {
 	Time        time.Time
@@ -9,8 +12,8 @@ type ObserverEvent struct {
 }
 
 type Observer interface {
-	OnNewURL(ObserverEvent)
-	OnGetURL(ObserverEvent)
+	OnNewURL(ctx context.Context, ev ObserverEvent)
+	OnGetURL(ctx context.Context, ev ObserverEvent)
 }
 
 type observersByID = map[string]Observer

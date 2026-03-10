@@ -13,7 +13,7 @@ GOFLAGS :=
 GOMOD := $(shell go env GOMOD)
 GOPATH := $(shell go env GOPATH)
 SHORTENER_PKG = ./cmd/shortener/main.go
-PKG := ./...
+PKG := ./cmd/shortener
 BUILD_VER = v0.1
 BUILD_DATE := $(shell date +"%Y/%m/%d %H:%M:%S")
 BUILD_COMMIT := $(shell git rev-parse --short HEAD)
@@ -50,7 +50,7 @@ build:
 		          -X 'main.buildCommit=$(BUILD_COMMIT)'" \
 		$(SHORTENER_PKG)
 run:
-	$(GO) run $(PKG) -d $(DB_URL)
+	$(GO) run $(PKG) -d $(DB_URL) --config ./config/config.json
 
 clean:
 	rm -rf bin
@@ -60,7 +60,7 @@ clean:
 ## ---------------------------
 
 test:
-	$(GO) test $(PKG) -cover -v
+	$(GO) test ./... -cover -v
 
 coverage: 
 	$(GO) test $(PKG) -covermode=count -coverpkg=$(PKG) -coverprofile=coverage.out

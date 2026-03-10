@@ -2,16 +2,16 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
-	"flag"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/georgg2003/shortener/internal/config"
@@ -60,28 +60,16 @@ func newRepo(ctx context.Context, conf *config.Config, logger *logrus.Logger) db
 	}
 }
 
-func newConfig(logger *logrus.Logger) *config.Config {
-	conf := config.New()
-	if err := conf.ReadFromEnv(); err != nil {
-		logger.WithError(err).Fatal("failed to read config from env")
-	}
-
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	if err := conf.ReadFromFlags(fs); err != nil {
-		logger.WithError(err).Fatal("failed to read config from flags")
-	}
-	err := fs.Parse(os.Args[1:])
-	if err != nil {
-		logger.WithError(err).Fatal("failed to parse os args")
-	}
-
-	return conf
-}
-
 func listen(server *http.Server, logger *logrus.Logger) func() error {
 	return func() error {
 		logger.Infof("Listening on %v", server.Addr)
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		var err error
+		if server.TLSConfig != nil {
+			err = server.ListenAndServeTLS("", "")
+		} else {
+			err = server.ListenAndServe()
+		}
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.WithError(err).Error("server failed")
 			return err
 		}
@@ -104,14 +92,17 @@ func printBuildInfo(logger logrus.FieldLogger) {
 }
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	defer stop()
 
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{})
 	logger.SetLevel(logrus.DebugLevel)
 
-	conf := newConfig(logger)
+	conf, err := config.Load()
+	if err != nil {
+		logger.WithError(err).Fatal("failed to load config")
+	}
 	repo := newRepo(ctx, conf, logger)
 	usecase := usecase.New(repo, conf, logger)
 
@@ -126,7 +117,17 @@ func main() {
 
 	r := delivery.GetNewRouter()
 
-	server := &http.Server{Addr: conf.ListenAddr, Handler: r}
+	var tlsConfig *tls.Config
+	if conf.EnableHTTPS {
+		manager := &autocert.Manager{
+			Cache:      autocert.DirCache("cache-dir"),
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist("localhost"),
+		}
+		tlsConfig = manager.TLSConfig()
+	}
+
+	server := &http.Server{Addr: conf.ListenAddr, Handler: r, TLSConfig: tlsConfig}
 
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -134,7 +135,7 @@ func main() {
 	g.Go(listenShutdown(ctx, server, logger))
 
 	if conf.DebugAddr != "" {
-		debugServer := &http.Server{Addr: conf.DebugAddr}
+		debugServer := &http.Server{Addr: conf.DebugAddr, TLSConfig: tlsConfig}
 		g.Go(listen(debugServer, logger))
 		g.Go(listenShutdown(ctx, debugServer, logger))
 	}
