@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"errors"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -33,12 +34,15 @@ type TestReporter interface {
 	FailNow()
 }
 
+type ModifyRequestFuncType func(req *resty.Request)
+
 type Common struct {
-	Name     string
-	Method   string
-	Path     string
-	Body     any
-	MockFunc func(t TestReporter, ts *TestServer)
+	Name             string
+	Method           string
+	Path             string
+	Body             any
+	MockFunc         func(t TestReporter, ts *TestServer)
+	ModifyRequstFunc ModifyRequestFuncType
 }
 
 type DeliveryTestCase struct {
@@ -59,7 +63,12 @@ type TestServer struct {
 	Repo *mock.MockRepository
 }
 
-func (ts *TestServer) makeRequest(t TestReporter, method, path string, body any) *resty.Response {
+func (ts *TestServer) makeRequest(
+	t TestReporter,
+	method, path string,
+	body any,
+	modifyRequestFunc ModifyRequestFuncType,
+) *resty.Response {
 	req := resty.New().
 		SetRedirectPolicy(resty.NoRedirectPolicy()).
 		R().
@@ -70,6 +79,10 @@ func (ts *TestServer) makeRequest(t TestReporter, method, path string, body any)
 	req.Method = method
 	req.URL = ts.MakeAbsoluteURL(path)
 	req.SetBody(body)
+
+	if modifyRequestFunc != nil {
+		modifyRequestFunc(req)
+	}
 
 	resp, err := req.Send()
 
@@ -85,7 +98,7 @@ func (ts *TestServer) RunTestCase(tc DeliveryTestCase) func(t *testing.T) {
 		if tc.MockFunc != nil {
 			tc.MockFunc(t, ts)
 		}
-		resp := ts.makeRequest(t, tc.Method, tc.Path, tc.Body)
+		resp := ts.makeRequest(t, tc.Method, tc.Path, tc.Body, tc.ModifyRequstFunc)
 
 		assert.Equal(t, tc.StatusCode, resp.StatusCode())
 		assert.Equal(t, tc.Response, resp.Body())
@@ -102,7 +115,7 @@ func (ts *TestServer) RunBenchmark(tc DeliveryBenchmark) func(b *testing.B) {
 			if tc.MockFunc != nil {
 				tc.MockFunc(b, ts)
 			}
-			ts.makeRequest(b, tc.Method, tc.Path, tc.Body)
+			ts.makeRequest(b, tc.Method, tc.Path, tc.Body, tc.ModifyRequstFunc)
 		}
 	}
 }
@@ -123,6 +136,9 @@ func NewTestServer(t TestReporter) *TestServer {
 	cfg.BaseURL = ts.URL
 	cfg.ListenAddr = ts.URL
 	cfg.DataBaseDSN = "some fake dsn"
+	_, ipNet, err := net.ParseCIDR(cfg.TrustedSubnetStr)
+	require.NoError(t, err)
+	cfg.TrustedSubnet = ipNet
 
 	ctrl := gomock.NewController(t)
 	repo := mock.NewMockRepository(ctrl)

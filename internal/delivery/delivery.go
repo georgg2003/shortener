@@ -3,6 +3,7 @@ package delivery
 
 import (
 	"io"
+	"net"
 	"net/http"
 
 	"github.com/georgg2003/shortener/internal/config"
@@ -26,9 +27,10 @@ type Delivery interface {
 }
 
 type delivery struct {
-	usecase usecase.UseCase
-	logger  logrus.FieldLogger
-	cfg     *config.Config
+	usecase       usecase.UseCase
+	logger        logrus.FieldLogger
+	cfg           *config.Config
+	trustedSubnet *net.IPNet
 }
 
 func New(
@@ -59,6 +61,7 @@ func (d *delivery) GetNewRouter() chi.Router {
 	r.Post("/api/shorten/batch", d.APIShortenURLBatch)
 	r.Get("/api/user/urls", d.GetUserURLs)
 	r.Delete("/api/user/urls", d.DeleteUserURLs)
+	r.Get("/api/internal/stats", d.InternalStats)
 
 	r.Post("/", d.ShortenURL)
 	r.Get("/{id}", d.ProcessShortURL)

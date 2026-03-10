@@ -22,6 +22,7 @@ type UseCase interface {
 	NewUser(ctx context.Context) (int64, error)
 	GetUserURLs(ctx context.Context) ([]models.URLEntity, error)
 	DeleteUserURLs(ctx context.Context, urls []string) error
+	GetStats(ctx context.Context) (models.Stats, error)
 }
 
 type useCase struct {

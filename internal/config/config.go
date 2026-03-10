@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net"
 	"os"
 	"strings"
 
@@ -32,6 +33,8 @@ type Config struct {
 	AuditStubEnabled bool   `mapstructure:"audit_stub_enabled" env:"AUDIT_STUB_ENABLED"`
 	DebugAddr        string `mapstructure:"debug_addr" env:"DEBUG_ADDR" flag:"debug-addr" flag_usage:"debug listen addres"`
 	EnableHTTPS      bool   `mapstructure:"enable_https" env:"ENABLE_HTTPS" flag:"s" flag_usage:"enabled https"`
+	TrustedSubnetStr string `mapstructure:"trusted_subnet" env:"TRUSTED_SUBNET" flag:"t" flag_usage:"trusted subnet for internal stats"`
+	TrustedSubnet    *net.IPNet
 }
 
 // Читает конфиг из файла.
@@ -92,11 +95,12 @@ func (c *Config) ReadFromEnv() error {
 
 func New() *Config {
 	return &Config{
-		ListenAddr:      "localhost:8080",
-		BaseURL:         "http://localhost:8080",
-		FileStoragePath: "",
-		DataBaseDSN:     "",
-		JWTSecretKey:    "secret_key",
+		ListenAddr:       "localhost:8080",
+		BaseURL:          "http://localhost:8080",
+		FileStoragePath:  "",
+		DataBaseDSN:      "",
+		JWTSecretKey:     "secret_key",
+		TrustedSubnetStr: "127.0.0.1/24",
 	}
 }
 
@@ -125,6 +129,14 @@ func Load() (*Config, error) {
 
 	if !flag.Parsed() {
 		flag.Parse()
+	}
+
+	if cfg.TrustedSubnetStr != "" {
+		_, ipNet, err := net.ParseCIDR(cfg.TrustedSubnetStr)
+		if err != nil {
+			return nil, utils.ErrWrap(err, "failed to parse trusted subnet settings")
+		}
+		cfg.TrustedSubnet = ipNet
 	}
 
 	return cfg, nil
