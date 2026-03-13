@@ -60,7 +60,7 @@ clean:
 ## ---------------------------
 
 test:
-	$(GO) test ./... -cover -v
+	$(GO) test ./... -cover
 
 coverage: 
 	$(GO) test ./internal/... ./pkg/... -covermode=count -coverpkg=./... -coverprofile=coverage.out
@@ -80,6 +80,13 @@ generate:
 
 gen-reset:
 	$(GO) go run ./cmd/reset/main.go $(PKG)
+
+gen-proto:
+	protoc \
+  --go_out=. --go_opt=paths=source_relative \
+  --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+  --go_opt=default_api_level=API_OPAQUE \
+  api/shortener.proto 
 
 ## ---------------------------
 ## Migrations

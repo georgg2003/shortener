@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os/signal"
@@ -13,9 +14,13 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 
+	"github.com/georgg2003/shortener/api"
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/delivery"
+	"github.com/georgg2003/shortener/internal/delivery/grpcapi"
+	"github.com/georgg2003/shortener/internal/pkg/interceptors"
 	audit_repo "github.com/georgg2003/shortener/internal/repository/audit"
 	audit_service "github.com/georgg2003/shortener/internal/repository/audit/service"
 	audit_storage "github.com/georgg2003/shortener/internal/repository/audit/storage"
@@ -25,6 +30,7 @@ import (
 	"github.com/georgg2003/shortener/internal/repository/db/storage"
 	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/georgg2003/shortener/internal/usecase/audit"
+	"github.com/georgg2003/shortener/pkg/utils"
 )
 
 var (
@@ -70,9 +76,33 @@ func listen(server *http.Server, logger *logrus.Logger) func() error {
 			err = server.ListenAndServe()
 		}
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.WithError(err).Error("server failed")
-			return err
+			return utils.ErrWrap(err, "http server failed")
 		}
+		return nil
+	}
+}
+
+func listenGRPC(port string, server *grpc.Server, logger *logrus.Logger) func() error {
+	return func() error {
+		logger.Infof("Listening tcp for grpc on %v", port)
+		listen, err := net.Listen("tcp", port)
+		if err != nil {
+			return utils.ErrWrap(err, "failed to init tcp listener")
+		}
+
+		if err := server.Serve(listen); err != nil {
+			return utils.ErrWrap(err, "failed to serve grpc server")
+		}
+
+		return nil
+	}
+}
+
+func listenGRPCShutdown(ctx context.Context, server *grpc.Server, logger *logrus.Logger) func() error {
+	return func() error {
+		<-ctx.Done()
+		logger.Infof("shutting down server")
+		server.GracefulStop()
 		return nil
 	}
 }
@@ -115,6 +145,7 @@ func main() {
 	defer usecase.Observe("audit", observer)()
 
 	delivery := delivery.New(usecase, logger, conf)
+	grpcServer := grpcapi.NewShortenerServer(usecase)
 
 	r := delivery.GetNewRouter()
 
@@ -134,6 +165,11 @@ func main() {
 
 	g.Go(listen(server, logger))
 	g.Go(listenShutdown(ctx, server, logger))
+
+	s := grpc.NewServer(grpc.UnaryInterceptor(interceptors.NewAuthInterceptor(conf, logger, usecase)))
+	api.RegisterShortenerServiceServer(s, grpcServer)
+	g.Go(listenGRPC(":3030", s, logger))
+	g.Go(listenGRPCShutdown(ctx, s, logger))
 
 	if conf.DebugAddr != "" {
 		debugServer := &http.Server{Addr: conf.DebugAddr, TLSConfig: tlsConfig}

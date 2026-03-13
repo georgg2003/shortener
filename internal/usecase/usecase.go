@@ -14,10 +14,11 @@ import (
 
 var errUserNotFound = errors.New("user is not found")
 
+//go:generate go tool mockgen -destination ./mock/mock.go -package mock . UseCase
 type UseCase interface {
-	NewShortURL(ctx context.Context, url string) (string, error)
+	NewShortURL(ctx context.Context, url string) (shortURL string, err error)
 	NewShortURLBatch(ctx context.Context, entities []*models.URLEntity) error
-	ProcessShortURL(ctx context.Context, id string) (string, bool, error)
+	ProcessShortURL(ctx context.Context, id string) (originalURL string, isDeleted bool, err error)
 	Ping(ctx context.Context) error
 	NewUser(ctx context.Context) (int64, error)
 	GetUserURLs(ctx context.Context) ([]models.URLEntity, error)
