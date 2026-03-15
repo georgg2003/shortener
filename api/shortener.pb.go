@@ -507,7 +507,7 @@ var File_api_shortener_proto protoreflect.FileDescriptor
 
 const file_api_shortener_proto_rawDesc = "" +
 	"\n" +
-	"\x13api/shortener.proto\x12\tshortener\x1a\x1bgoogle/protobuf/Empty.proto\"%\n" +
+	"\x13api/shortener.proto\x12\tshortener\x1a\x1bgoogle/protobuf/empty.proto\"%\n" +
 	"\x11URLShortenRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\",\n" +
 	"\x12URLShortenResponse\x12\x16\n" +

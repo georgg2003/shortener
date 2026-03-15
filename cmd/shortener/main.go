@@ -15,6 +15,8 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 
 	"github.com/georgg2003/shortener/api"
 	"github.com/georgg2003/shortener/internal/config"
@@ -89,7 +91,7 @@ func listenGRPC(port string, server *grpc.Server, logger *logrus.Logger) func() 
 		if err != nil {
 			return utils.ErrWrap(err, "failed to init tcp listener")
 		}
-
+		reflection.Register(server)
 		if err := server.Serve(listen); err != nil {
 			return utils.ErrWrap(err, "failed to serve grpc server")
 		}
@@ -166,7 +168,14 @@ func main() {
 	g.Go(listen(server, logger))
 	g.Go(listenShutdown(ctx, server, logger))
 
-	s := grpc.NewServer(grpc.UnaryInterceptor(interceptors.NewAuthInterceptor(conf, logger, usecase)))
+	s := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			interceptors.RequestIDInterceptor,
+			interceptors.NewLoggingInterceptor(logger),
+			interceptors.NewAuthInterceptor(conf, logger, usecase),
+		),
+		grpc.Creds(insecure.NewCredentials()),
+	)
 	api.RegisterShortenerServiceServer(s, grpcServer)
 	g.Go(listenGRPC(":3030", s, logger))
 	g.Go(listenGRPCShutdown(ctx, s, logger))

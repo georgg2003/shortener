@@ -15,3 +15,16 @@ func GetUserID(ctx context.Context) (int64, bool) {
 	userID, ok := ctx.Value(uk).(int64)
 	return userID, ok
 }
+
+type requestIDKey struct{}
+
+var reqIDKey = userKey{}
+
+func SetRequestID(ctx context.Context, requestID string) context.Context {
+	return context.WithValue(ctx, reqIDKey, requestID)
+}
+
+func GetRequestID(ctx context.Context) (string, bool) {
+	reqID, ok := ctx.Value(reqIDKey).(string)
+	return reqID, ok
+}

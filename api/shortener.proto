@@ -2,7 +2,7 @@ edition = "2023";
 
 package shortener;
 
-import "google/protobuf/Empty.proto";
+import "google/protobuf/empty.proto";
 
 option go_package = "github.com/georgg2003/shortener/api";
 
