@@ -84,10 +84,10 @@ func listen(server *http.Server, logger *logrus.Logger) func() error {
 	}
 }
 
-func listenGRPC(port string, server *grpc.Server, logger *logrus.Logger) func() error {
+func listenGRPC(cfg *config.Config, server *grpc.Server, logger *logrus.Logger) func() error {
 	return func() error {
-		logger.Infof("Listening tcp for grpc on %v", port)
-		listen, err := net.Listen("tcp", port)
+		logger.Infof("Listening tcp for grpc on %v", cfg.GRPCListenAddr)
+		listen, err := net.Listen("tcp", cfg.GRPCListenAddr)
 		if err != nil {
 			return utils.ErrWrap(err, "failed to init tcp listener")
 		}
@@ -177,7 +177,7 @@ func main() {
 		grpc.Creds(insecure.NewCredentials()),
 	)
 	api.RegisterShortenerServiceServer(s, grpcServer)
-	g.Go(listenGRPC(":3030", s, logger))
+	g.Go(listenGRPC(conf, s, logger))
 	g.Go(listenGRPCShutdown(ctx, s, logger))
 
 	if conf.DebugAddr != "" {

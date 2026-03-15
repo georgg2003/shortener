@@ -35,6 +35,8 @@ type Config struct {
 	EnableHTTPS      bool   `mapstructure:"enable_https" env:"ENABLE_HTTPS" flag:"s" flag_usage:"enabled https"`
 	TrustedSubnetStr string `mapstructure:"trusted_subnet" env:"TRUSTED_SUBNET" flag:"t" flag_usage:"trusted subnet for internal stats"`
 	TrustedSubnet    *net.IPNet
+	// GRPC API
+	GRPCListenAddr string `mapstructure:"grpc_listen_addr" env:"GRPC_SERVER_ADDRESS" flag:"ga" flag_usage:"grpc listen addres"`
 }
 
 // Читает конфиг из файла.
@@ -101,6 +103,7 @@ func New() *Config {
 		DataBaseDSN:      "",
 		JWTSecretKey:     "secret_key",
 		TrustedSubnetStr: "127.0.0.1/32",
+		GRPCListenAddr:   "localhost:3030",
 	}
 }
 
