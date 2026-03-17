@@ -18,7 +18,7 @@ func GetUserID(ctx context.Context) (int64, bool) {
 
 type requestIDKey struct{}
 
-var reqIDKey = userKey{}
+var reqIDKey = requestIDKey{}
 
 func SetRequestID(ctx context.Context, requestID string) context.Context {
 	return context.WithValue(ctx, reqIDKey, requestID)

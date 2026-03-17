@@ -2,14 +2,12 @@ edition = "2023";
 
 package shortener;
 
-import "google/protobuf/empty.proto";
-
 option go_package = "github.com/georgg2003/shortener/api";
 
 service ShortenerService {
   rpc ShortenURL (URLShortenRequest) returns (URLShortenResponse);
   rpc ExpandURL (URLExpandRequest) returns (URLExpandResponse);
-  rpc ListUserURLs (google.protobuf.Empty) returns (UserURLsResponse);
+  rpc ListUserURLs (ListUserURLsRequest) returns (UserURLsResponse);
 }
 
 message URLShortenRequest {
@@ -28,6 +26,7 @@ message URLExpandResponse {
   string result = 1;
 }
 
+message ListUserURLsRequest {}
 
 message UserURLsResponse {
   repeated URLData url = 1;

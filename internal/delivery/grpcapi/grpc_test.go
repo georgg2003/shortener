@@ -9,12 +9,12 @@ import (
 	"github.com/georgg2003/shortener/internal/models"
 	"github.com/georgg2003/shortener/internal/pkg/testutils"
 	"github.com/georgg2003/shortener/internal/usecase/mock"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var testShortID = testutils.TestShortID
@@ -25,7 +25,7 @@ var testShortURL = testBaseURL + "/" + testShortID
 func TestShortenerService_ExpandURL(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	uc := mock.NewMockUseCase(ctrl)
-	server := grpcapi.NewShortenerServer(uc)
+	server := grpcapi.NewShortenerServer(uc, logrus.StandardLogger())
 
 	makeCall := func() (*api.URLExpandResponse, error) {
 		return server.ExpandURL(context.Background(), api.URLExpandRequest_builder{
@@ -62,10 +62,10 @@ func TestShortenerService_ExpandURL(t *testing.T) {
 func TestShortenerService_ListUserURLs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	uc := mock.NewMockUseCase(ctrl)
-	server := grpcapi.NewShortenerServer(uc)
+	server := grpcapi.NewShortenerServer(uc, logrus.StandardLogger())
 
 	makeCall := func() (*api.UserURLsResponse, error) {
-		return server.ListUserURLs(context.Background(), &emptypb.Empty{})
+		return server.ListUserURLs(context.Background(), api.ListUserURLsRequest_builder{}.Build())
 	}
 
 	makeMock := func() *gomock.Call {
@@ -104,7 +104,7 @@ func TestShortenerService_ListUserURLs(t *testing.T) {
 func TestShortenerService_ShortenURL(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	uc := mock.NewMockUseCase(ctrl)
-	server := grpcapi.NewShortenerServer(uc)
+	server := grpcapi.NewShortenerServer(uc, logrus.StandardLogger())
 
 	makeCall := func() (*api.URLShortenResponse, error) {
 		return server.ShortenURL(context.Background(), api.URLShortenRequest_builder{

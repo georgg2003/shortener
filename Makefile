@@ -60,7 +60,7 @@ clean:
 ## ---------------------------
 
 test:
-	$(GO) test ./... -cover
+	$(GO) test ./...
 
 coverage: 
 	$(GO) test ./internal/... ./pkg/... -covermode=count -coverpkg=./... -coverprofile=coverage.out

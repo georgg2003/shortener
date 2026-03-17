@@ -8,8 +8,7 @@ import (
 )
 
 func (d delivery) InternalStats(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	stats, err := d.usecase.GetStats(ctx)
+	stats, err := d.usecase.GetStats(r.Context())
 	if err != nil {
 		d.logger.WithError(err).Error("failed to get stats")
 		http.Error(w, err.Error(), http.StatusInternalServerError)

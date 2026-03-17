@@ -147,7 +147,7 @@ func main() {
 	defer usecase.Observe("audit", observer)()
 
 	delivery := delivery.New(usecase, logger, conf)
-	grpcServer := grpcapi.NewShortenerServer(usecase)
+	grpcServer := grpcapi.NewShortenerServer(usecase, logger)
 
 	r := delivery.GetNewRouter()
 
