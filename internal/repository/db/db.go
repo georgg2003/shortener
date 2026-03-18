@@ -21,4 +21,5 @@ type Repository interface {
 	NewUser(ctx context.Context) (int64, error)
 	GetUserURLs(ctx context.Context, userID int64) ([]models.URLEntity, error)
 	DeleteUserURLs(ctx context.Context, tasks []models.DeleteUserURLsTask) error
+	GetStats(ctx context.Context) (models.Stats, error)
 }

@@ -101,6 +101,21 @@ func (mr *MockRepositoryMockRecorder) GetShortIDsBatch(ctx, entities any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetShortIDsBatch", reflect.TypeOf((*MockRepository)(nil).GetShortIDsBatch), ctx, entities)
 }
 
+// GetStats mocks base method.
+func (m *MockRepository) GetStats(ctx context.Context) (models.Stats, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStats", ctx)
+	ret0, _ := ret[0].(models.Stats)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStats indicates an expected call of GetStats.
+func (mr *MockRepositoryMockRecorder) GetStats(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStats", reflect.TypeOf((*MockRepository)(nil).GetStats), ctx)
+}
+
 // GetUserURLs mocks base method.
 func (m *MockRepository) GetUserURLs(ctx context.Context, userID int64) ([]models.URLEntity, error) {
 	m.ctrl.T.Helper()

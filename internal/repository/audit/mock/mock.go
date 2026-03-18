@@ -10,6 +10,7 @@
 package mock
 
 import (
+	context "context"
 	reflect "reflect"
 
 	audit "github.com/georgg2003/shortener/internal/repository/audit"
@@ -41,15 +42,15 @@ func (m *MockAuditRepository) EXPECT() *MockAuditRepositoryMockRecorder {
 }
 
 // WriteLog mocks base method.
-func (m *MockAuditRepository) WriteLog(arg0 audit.AuditLog) error {
+func (m *MockAuditRepository) WriteLog(ctx context.Context, log audit.AuditLog) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WriteLog", arg0)
+	ret := m.ctrl.Call(m, "WriteLog", ctx, log)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // WriteLog indicates an expected call of WriteLog.
-func (mr *MockAuditRepositoryMockRecorder) WriteLog(arg0 any) *gomock.Call {
+func (mr *MockAuditRepositoryMockRecorder) WriteLog(ctx, log any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteLog", reflect.TypeOf((*MockAuditRepository)(nil).WriteLog), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteLog", reflect.TypeOf((*MockAuditRepository)(nil).WriteLog), ctx, log)
 }

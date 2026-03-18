@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os/signal"
@@ -13,9 +14,15 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 
+	"github.com/georgg2003/shortener/api"
 	"github.com/georgg2003/shortener/internal/config"
 	"github.com/georgg2003/shortener/internal/delivery"
+	"github.com/georgg2003/shortener/internal/delivery/grpcapi"
+	"github.com/georgg2003/shortener/internal/pkg/interceptors"
 	audit_repo "github.com/georgg2003/shortener/internal/repository/audit"
 	audit_service "github.com/georgg2003/shortener/internal/repository/audit/service"
 	audit_storage "github.com/georgg2003/shortener/internal/repository/audit/storage"
@@ -25,6 +32,7 @@ import (
 	"github.com/georgg2003/shortener/internal/repository/db/storage"
 	"github.com/georgg2003/shortener/internal/usecase"
 	"github.com/georgg2003/shortener/internal/usecase/audit"
+	"github.com/georgg2003/shortener/pkg/utils"
 )
 
 var (
@@ -70,9 +78,33 @@ func listen(server *http.Server, logger *logrus.Logger) func() error {
 			err = server.ListenAndServe()
 		}
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.WithError(err).Error("server failed")
-			return err
+			return utils.ErrWrap(err, "http server failed")
 		}
+		return nil
+	}
+}
+
+func listenGRPC(cfg *config.Config, server *grpc.Server, logger *logrus.Logger) func() error {
+	return func() error {
+		logger.Infof("Listening tcp for grpc on %v", cfg.GRPCListenAddr)
+		listen, err := net.Listen("tcp", cfg.GRPCListenAddr)
+		if err != nil {
+			return utils.ErrWrap(err, "failed to init tcp listener")
+		}
+		reflection.Register(server)
+		if err := server.Serve(listen); err != nil {
+			return utils.ErrWrap(err, "failed to serve grpc server")
+		}
+
+		return nil
+	}
+}
+
+func listenGRPCShutdown(ctx context.Context, server *grpc.Server, logger *logrus.Logger) func() error {
+	return func() error {
+		<-ctx.Done()
+		logger.Infof("shutting down server")
+		server.GracefulStop()
 		return nil
 	}
 }
@@ -92,9 +124,6 @@ func printBuildInfo(logger logrus.FieldLogger) {
 }
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	defer stop()
-
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{})
 	logger.SetLevel(logrus.DebugLevel)
@@ -103,6 +132,10 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatal("failed to load config")
 	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	defer stop()
+
 	repo := newRepo(ctx, conf, logger)
 	usecase := usecase.New(repo, conf, logger)
 
@@ -114,6 +147,7 @@ func main() {
 	defer usecase.Observe("audit", observer)()
 
 	delivery := delivery.New(usecase, logger, conf)
+	grpcServer := grpcapi.NewShortenerServer(usecase, logger)
 
 	r := delivery.GetNewRouter()
 
@@ -133,6 +167,18 @@ func main() {
 
 	g.Go(listen(server, logger))
 	g.Go(listenShutdown(ctx, server, logger))
+
+	s := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			interceptors.RequestIDInterceptor,
+			interceptors.NewLoggingInterceptor(logger),
+			interceptors.NewAuthInterceptor(conf, logger, usecase),
+		),
+		grpc.Creds(insecure.NewCredentials()),
+	)
+	api.RegisterShortenerServiceServer(s, grpcServer)
+	g.Go(listenGRPC(conf, s, logger))
+	g.Go(listenGRPCShutdown(ctx, s, logger))
 
 	if conf.DebugAddr != "" {
 		debugServer := &http.Server{Addr: conf.DebugAddr, TLSConfig: tlsConfig}

@@ -60,10 +60,10 @@ clean:
 ## ---------------------------
 
 test:
-	$(GO) test ./... -cover -v
+	$(GO) test ./...
 
 coverage: 
-	$(GO) test $(PKG) -covermode=count -coverpkg=$(PKG) -coverprofile=coverage.out
+	$(GO) test ./internal/... ./pkg/... -covermode=count -coverpkg=./... -coverprofile=coverage.out
 	grep -vE "(mock\.go|/mock/|/*.gen.go|/testutils/)" coverage.out > coverage.filtered.out
 	mv coverage.filtered.out coverage.out
 	$(GO) tool cover -func=coverage.out
@@ -76,10 +76,17 @@ lint:
 ## ---------------------------
 
 generate:
-	$(GO) generate $(PKG)
+	$(GO) generate ./...
 
 gen-reset:
 	$(GO) go run ./cmd/reset/main.go $(PKG)
+
+gen-proto:
+	protoc \
+  --go_out=. --go_opt=paths=source_relative \
+  --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+  --go_opt=default_api_level=API_OPAQUE \
+  api/shortener.proto 
 
 ## ---------------------------
 ## Migrations
